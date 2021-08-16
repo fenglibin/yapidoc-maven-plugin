@@ -1,7 +1,8 @@
 package com.ztianzeng.apidoc.maven.ssh;
 
-import lombok.Data;
 import org.apache.maven.plugins.annotations.Parameter;
+
+import lombok.Data;
 
 /**
  * @author zhaotianzeng
@@ -10,15 +11,15 @@ import org.apache.maven.plugins.annotations.Parameter;
  */
 @Data
 public class SCPConfig {
-    /**
-     * 目录
-     */
-    @Parameter(property = "remoteTargetDirectory", required = true)
-    private String remoteTargetDirectory;
+	/**
+	 * 目录
+	 */
+	@Parameter(property = "remoteTargetDirectory", required = true)
+	private String remoteTargetDirectory;
 
-    /**
-     * 权限
-     */
-    @Parameter(property = "model")
-    private String model;
+	/**
+	 * 权限
+	 */
+	@Parameter(property = "model")
+	private String model;
 }

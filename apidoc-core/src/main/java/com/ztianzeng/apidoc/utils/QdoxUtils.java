@@ -1,10 +1,10 @@
 package com.ztianzeng.apidoc.utils;
 
-import com.thoughtworks.qdox.model.JavaAnnotatedElement;
-import com.thoughtworks.qdox.model.JavaAnnotation;
-
 import java.lang.reflect.Type;
 import java.util.Optional;
+
+import com.thoughtworks.qdox.model.JavaAnnotatedElement;
+import com.thoughtworks.qdox.model.JavaAnnotation;
 
 /**
  * @author zhaotianzeng
@@ -13,9 +13,9 @@ import java.util.Optional;
  */
 public final class QdoxUtils {
 	private QdoxUtils() {
-	
+
 	}
-	
+
 	/**
 	 * 获取注解
 	 *
@@ -30,7 +30,7 @@ public final class QdoxUtils {
 		}
 		return Optional.empty();
 	}
-	
+
 	/**
 	 * 获取注解
 	 *
@@ -40,5 +40,5 @@ public final class QdoxUtils {
 	public static Optional<JavaAnnotation> getAnnotation(JavaAnnotatedElement annotatedElement, Type type) {
 		return getAnnotation(annotatedElement, type.getTypeName());
 	}
-	
+
 }

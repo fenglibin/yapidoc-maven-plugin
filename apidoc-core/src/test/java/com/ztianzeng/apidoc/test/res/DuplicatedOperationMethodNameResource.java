@@ -5,28 +5,28 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 public class DuplicatedOperationMethodNameResource {
 
-    @GetMapping("/1")
-    public void getSummaryAndDescription1() {
-    }
+	@GetMapping("/1")
+	public void getSummaryAndDescription1() {
+	}
 
-    @GetMapping("/2")
-    public void getSummaryAndDescription2() {
-    }
+	@GetMapping("/2")
+	public void getSummaryAndDescription2() {
+	}
 
-    @PostMapping("/2")
-    public void postSummaryAndDescription2() {
-    }
+	@PostMapping("/2")
+	public void postSummaryAndDescription2() {
+	}
 
-    @GetMapping("/3")
-    public void getSummaryAndDescription3() {
-    }
+	@GetMapping("/3")
+	public void getSummaryAndDescription3() {
+	}
 
-    @PostMapping("/3")
-    public void postSummaryAndDescription3() {
-    }
+	@PostMapping("/3")
+	public void postSummaryAndDescription3() {
+	}
 
-    @GetMapping("/4")
-    public void getSummaryAndDescription3(String foo) {
-    }
+	@GetMapping("/4")
+	public void getSummaryAndDescription3(String foo) {
+	}
 
 }

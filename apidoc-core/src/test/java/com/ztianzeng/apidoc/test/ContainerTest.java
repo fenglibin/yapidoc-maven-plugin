@@ -1,5 +1,12 @@
 package com.ztianzeng.apidoc.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Calendar;
+import java.util.Map;
+
+import org.junit.Test;
 
 import com.thoughtworks.qdox.model.JavaClass;
 import com.ztianzeng.apidoc.ModelResolver;
@@ -10,135 +17,123 @@ import com.ztianzeng.apidoc.models.media.Schema;
 import com.ztianzeng.apidoc.test.res.CreateParam;
 import com.ztianzeng.apidoc.test.res.InnerType;
 import com.ztianzeng.apidoc.test.res.Result;
-import org.junit.Test;
-
-import java.util.Calendar;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 
 public class ContainerTest extends TestBase {
 
-    @Test
-    public void testArray() throws Exception {
-        final ModelResolver modelResolver = new ModelResolver(sourceBuilder);
+	@Test
+	public void testArray() throws Exception {
+		final ModelResolver modelResolver = new ModelResolver(sourceBuilder);
 
-        final ModelConverterContextImpl context = new ModelConverterContextImpl(modelResolver);
-        JavaClass classByName = TestBase.builder.getClassByName(ArrayBean.class.getName());
+		final ModelConverterContextImpl context = new ModelConverterContextImpl(modelResolver);
+		JavaClass classByName = TestBase.builder.getClassByName(ArrayBean.class.getName());
 
-        final Schema model = context
-                .resolve(new AnnotatedType(classByName));
+		final Schema model = context.resolve(new AnnotatedType(classByName));
 
-        final Map<String, Schema> props = model.getProperties();
-        assertEquals(1, props.size());
-        final Schema prop = props.get("a");
-        assertNotNull(prop);
-        assertEquals(prop.getType(), "array");
+		final Map<String, Schema> props = model.getProperties();
+		assertEquals(1, props.size());
+		final Schema prop = props.get("a");
+		assertNotNull(prop);
+		assertEquals(prop.getType(), "array");
 
-        final Schema items = ((ArraySchema) prop).getItems();
-        assertNotNull(items);
-        assertEquals(items.getType(), "integer");
-    }
+		final Schema items = ((ArraySchema) prop).getItems();
+		assertNotNull(items);
+		assertEquals(items.getType(), "integer");
+	}
 
-    @Test
-    public void testMap() throws Exception {
-        final ModelResolver modelResolver = new ModelResolver(sourceBuilder);
-        final ModelConverterContextImpl context = new ModelConverterContextImpl(modelResolver);
-        JavaClass classByName = TestBase.builder.getClassByName(MapBean.class.getName());
+	@Test
+	public void testMap() throws Exception {
+		final ModelResolver modelResolver = new ModelResolver(sourceBuilder);
+		final ModelConverterContextImpl context = new ModelConverterContextImpl(modelResolver);
+		JavaClass classByName = TestBase.builder.getClassByName(MapBean.class.getName());
 
-        final Schema model = context
-                .resolve(new AnnotatedType(classByName));
+		final Schema model = context.resolve(new AnnotatedType(classByName));
 
-        final Map<String, Schema> props = model.getProperties();
-        assertEquals(1, props.size());
-        final Schema prop = props.get("stuff");
-        assertNotNull(prop);
-        assertEquals(prop.getType(), "object");
+		final Map<String, Schema> props = model.getProperties();
+		assertEquals(1, props.size());
+		final Schema prop = props.get("stuff");
+		assertNotNull(prop);
+		assertEquals(prop.getType(), "object");
 
-        final Schema items = (Schema) prop.getAdditionalProperties();
-        assertNotNull(items);
-        assertEquals(items.getType(), "date-time");
-    }
+		final Schema items = (Schema) prop.getAdditionalProperties();
+		assertNotNull(items);
+		assertEquals(items.getType(), "date-time");
+	}
 
-    @Test
-    public void testComplexMap() throws Exception {
-        ModelResolver resolver = new ModelResolver(sourceBuilder);
+	@Test
+	public void testComplexMap() throws Exception {
+		ModelResolver resolver = new ModelResolver(sourceBuilder);
 
-        final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
-        JavaClass classByName = TestBase.builder.getClassByName(WrapperType.class.getName());
-        context.resolve(new AnnotatedType(classByName));
+		final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
+		JavaClass classByName = TestBase.builder.getClassByName(WrapperType.class.getName());
+		context.resolve(new AnnotatedType(classByName));
 
-        final Map<String, Schema> models = context.getDefinedModels();
-        final Schema innerType = models.get("InnerType");
-        assertNotNull(innerType);
-        final Map<String, Schema> innerProps = innerType.getProperties();
-        assertEquals(innerProps.size(), 2);
-        final Schema foo = innerProps.get("foo");
-        assertEquals(foo.getType(), "integer");
-        assertEquals(foo.getFormat(), "int32");
-        final Schema name = innerProps.get("name");
-        assertEquals(name.getType(), "string");
+		final Map<String, Schema> models = context.getDefinedModels();
+		final Schema innerType = models.get("InnerType");
+		assertNotNull(innerType);
+		final Map<String, Schema> innerProps = innerType.getProperties();
+		assertEquals(innerProps.size(), 2);
+		final Schema foo = innerProps.get("foo");
+		assertEquals(foo.getType(), "integer");
+		assertEquals(foo.getFormat(), "int32");
+		final Schema name = innerProps.get("name");
+		assertEquals(name.getType(), "string");
 
-        final Schema wrapperType = models.get("WrapperType");
-        assertNotNull(wrapperType);
-        assertEquals(((Schema) wrapperType.getProperties().get("innerType")).getType(), "object");
-    }
+		final Schema wrapperType = models.get("WrapperType");
+		assertNotNull(wrapperType);
+		assertEquals(((Schema) wrapperType.getProperties().get("innerType")).getType(), "object");
+	}
 
+	@Test
+	public void testResult() {
+		ModelResolver resolver = new ModelResolver(sourceBuilder);
 
-    @Test
-    public void testResult() {
-        ModelResolver resolver = new ModelResolver(sourceBuilder);
+		final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
+		JavaClass classByName = TestBase.builder.getClassByName(ResultBean.class.getName());
+		context.resolve(new AnnotatedType(classByName));
 
-        final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
-        JavaClass classByName = TestBase.builder.getClassByName(ResultBean.class.getName());
-        context.resolve(new AnnotatedType(classByName));
+		final Map<String, Schema> models = context.getDefinedModels();
+		final Schema createParam = models.get("CreateParam");
+		assertNotNull(createParam);
+		final Map<String, Schema> innerProps = createParam.getProperties();
+		assertEquals(innerProps.size(), 2);
+		final Schema foo = innerProps.get("user");
+		assertEquals(foo.getType(), "string");
+		final Schema name = innerProps.get("mobile");
+		assertEquals(name.getType(), "string");
+	}
 
-        final Map<String, Schema> models = context.getDefinedModels();
-        final Schema createParam = models.get("CreateParam");
-        assertNotNull(createParam);
-        final Map<String, Schema> innerProps = createParam.getProperties();
-        assertEquals(innerProps.size(), 2);
-        final Schema foo = innerProps.get("user");
-        assertEquals(foo.getType(), "string");
-        final Schema name = innerProps.get("mobile");
-        assertEquals(name.getType(), "string");
-    }
+	@Test
+	public void testResult2() {
+		ModelResolver resolver = new ModelResolver(sourceBuilder);
 
-    @Test
-    public void testResult2() {
-        ModelResolver resolver = new ModelResolver(sourceBuilder);
+		final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
+		JavaClass classByName = TestBase.builder.getClassByName(ResultBean2.class.getName());
+		context.resolve(new AnnotatedType(classByName));
 
-        final ModelConverterContextImpl context = new ModelConverterContextImpl(resolver);
-        JavaClass classByName = TestBase.builder.getClassByName(ResultBean2.class.getName());
-        context.resolve(new AnnotatedType(classByName));
+		final Map<String, Schema> models = context.getDefinedModels();
+		final Schema createParam = models.get("ResultResultCreateParam");
+		assertNotNull(createParam);
 
-        final Map<String, Schema> models = context.getDefinedModels();
-        final Schema createParam = models.get("ResultResultCreateParam");
-        assertNotNull(createParam);
+	}
 
+	static class ArrayBean {
+		public int[] a;
+	}
 
-    }
+	static class MapBean {
+		public Map<Short, Calendar> stuff;
+	}
 
-    static class ArrayBean {
-        public int[] a;
-    }
+	static class WrapperType {
+		public Map<String, InnerType> innerType;
+	}
 
-    static class MapBean {
-        public Map<Short, Calendar> stuff;
-    }
+	static class ResultBean {
+		public Result<CreateParam> result;
+	}
 
-    static class WrapperType {
-        public Map<String, InnerType> innerType;
-    }
-
-    static class ResultBean {
-        public Result<CreateParam> result;
-    }
-
-    static class ResultBean2 {
-        public Result<Result<CreateParam>> result2;
-    }
+	static class ResultBean2 {
+		public Result<Result<CreateParam>> result2;
+	}
 
 }

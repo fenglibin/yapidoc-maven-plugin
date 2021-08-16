@@ -1,8 +1,8 @@
 package com.ztianzeng.apidoc.test.res;
 
-import lombok.Data;
-
 import javax.validation.constraints.NotEmpty;
+
+import lombok.Data;
 
 /**
  * @author zhaotianzeng
@@ -11,13 +11,13 @@ import javax.validation.constraints.NotEmpty;
  */
 @Data
 public class CreateVO {
-    /**
-     * 用户名
-     */
-    @NotEmpty
-    private String username;
-    /**
-     * 手机
-     */
-    private String mobile;
+	/**
+	 * 用户名
+	 */
+	@NotEmpty
+	private String username;
+	/**
+	 * 手机
+	 */
+	private String mobile;
 }

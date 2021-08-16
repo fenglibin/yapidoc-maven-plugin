@@ -1,8 +1,8 @@
 package com.ztianzeng.apidoc.test;
 
-import lombok.Data;
-
 import java.util.List;
+
+import lombok.Data;
 
 /**
  * @author zhaotianzeng
@@ -11,5 +11,5 @@ import java.util.List;
  */
 @Data
 public class ListParam2 {
-    private List<List<CreateParam2>> testList;
+	private List<List<CreateParam2>> testList;
 }

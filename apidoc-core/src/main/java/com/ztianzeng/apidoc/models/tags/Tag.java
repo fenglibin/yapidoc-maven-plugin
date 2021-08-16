@@ -16,9 +16,9 @@
 
 package com.ztianzeng.apidoc.models.tags;
 
-import com.ztianzeng.apidoc.models.ExternalDocumentation;
-
 import java.util.Objects;
+
+import com.ztianzeng.apidoc.models.ExternalDocumentation;
 
 /**
  * Tag
@@ -27,133 +27,131 @@ import java.util.Objects;
  */
 
 public class Tag {
-    private String name = null;
-    private String description = null;
-    private ExternalDocumentation externalDocs = null;
-    private java.util.Map<String, Object> extensions = null;
+	private String name = null;
+	private String description = null;
+	private ExternalDocumentation externalDocs = null;
+	private java.util.Map<String, Object> extensions = null;
 
-    /**
-     * returns the name property from a Tag instance.
-     *
-     * @return String name
-     **/
+	/**
+	 * returns the name property from a Tag instance.
+	 *
+	 * @return String name
+	 **/
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public Tag name(String name) {
-        this.name = name;
-        return this;
-    }
+	public Tag name(String name) {
+		this.name = name;
+		return this;
+	}
 
-    /**
-     * returns the description property from a Tag instance.
-     *
-     * @return String description
-     **/
+	/**
+	 * returns the description property from a Tag instance.
+	 *
+	 * @return String description
+	 **/
 
-    public String getDescription() {
-        return description;
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+	public void setDescription(String description) {
+		this.description = description;
+	}
 
-    public Tag description(String description) {
-        this.description = description;
-        return this;
-    }
+	public Tag description(String description) {
+		this.description = description;
+		return this;
+	}
 
-    /**
-     * returns the externalDocs property from a Tag instance.
-     *
-     * @return ExternalDocumentation externalDocs
-     **/
+	/**
+	 * returns the externalDocs property from a Tag instance.
+	 *
+	 * @return ExternalDocumentation externalDocs
+	 **/
 
-    public ExternalDocumentation getExternalDocs() {
-        return externalDocs;
-    }
+	public ExternalDocumentation getExternalDocs() {
+		return externalDocs;
+	}
 
-    public void setExternalDocs(ExternalDocumentation externalDocs) {
-        this.externalDocs = externalDocs;
-    }
+	public void setExternalDocs(ExternalDocumentation externalDocs) {
+		this.externalDocs = externalDocs;
+	}
 
-    public Tag externalDocs(ExternalDocumentation externalDocs) {
-        this.externalDocs = externalDocs;
-        return this;
-    }
+	public Tag externalDocs(ExternalDocumentation externalDocs) {
+		this.externalDocs = externalDocs;
+		return this;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Tag tag = (Tag) o;
-        return Objects.equals(this.name, tag.name) &&
-                Objects.equals(this.description, tag.description) &&
-                Objects.equals(this.externalDocs, tag.externalDocs) &&
-                Objects.equals(this.extensions, tag.extensions);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Tag tag = (Tag) o;
+		return Objects.equals(this.name, tag.name) && Objects.equals(this.description, tag.description)
+				&& Objects.equals(this.externalDocs, tag.externalDocs)
+				&& Objects.equals(this.extensions, tag.extensions);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, description, externalDocs, extensions);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, description, externalDocs, extensions);
+	}
 
-    public java.util.Map<String, Object> getExtensions() {
-        return extensions;
-    }
+	public java.util.Map<String, Object> getExtensions() {
+		return extensions;
+	}
 
-    public void addExtension(String name, Object value) {
-        if (name == null || name.isEmpty() || !name.startsWith("x-")) {
-            return;
-        }
-        if (this.extensions == null) {
-            this.extensions = new java.util.LinkedHashMap<>();
-        }
-        this.extensions.put(name, value);
-    }
+	public void addExtension(String name, Object value) {
+		if (name == null || name.isEmpty() || !name.startsWith("x-")) {
+			return;
+		}
+		if (this.extensions == null) {
+			this.extensions = new java.util.LinkedHashMap<>();
+		}
+		this.extensions.put(name, value);
+	}
 
-    public void setExtensions(java.util.Map<String, Object> extensions) {
-        this.extensions = extensions;
-    }
+	public void setExtensions(java.util.Map<String, Object> extensions) {
+		this.extensions = extensions;
+	}
 
-    public Tag extensions(java.util.Map<String, Object> extensions) {
-        this.extensions = extensions;
-        return this;
-    }
+	public Tag extensions(java.util.Map<String, Object> extensions) {
+		this.extensions = extensions;
+		return this;
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Tag {\n");
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Tag {\n");
 
-        sb.append("    name: ").append(toIndentedString(name)).append("\n");
-        sb.append("    description: ").append(toIndentedString(description)).append("\n");
-        sb.append("    externalDocs: ").append(toIndentedString(externalDocs)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
+		sb.append("    name: ").append(toIndentedString(name)).append("\n");
+		sb.append("    description: ").append(toIndentedString(description)).append("\n");
+		sb.append("    externalDocs: ").append(toIndentedString(externalDocs)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

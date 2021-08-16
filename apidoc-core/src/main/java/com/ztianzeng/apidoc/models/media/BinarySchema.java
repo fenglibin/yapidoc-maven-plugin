@@ -25,71 +25,71 @@ import java.util.Objects;
 
 public class BinarySchema extends Schema<byte[]> {
 
-    public BinarySchema() {
-        super("string", "binary");
-    }
+	public BinarySchema() {
+		super("string", "binary");
+	}
 
-    public BinarySchema type(String type) {
-        super.setType(type);
-        return this;
-    }
+	public BinarySchema type(String type) {
+		super.setType(type);
+		return this;
+	}
 
-    public BinarySchema format(String format) {
-        super.setFormat(format);;
-        return this;
-    }
+	public BinarySchema format(String format) {
+		super.setFormat(format);
+		;
+		return this;
+	}
 
-    public BinarySchema _default(byte[] _default) {
-        super.setDefault(_default);
-        return this;
-    }
+	public BinarySchema _default(byte[] _default) {
+		super.setDefault(_default);
+		return this;
+	}
 
-    @Override
-    protected byte[] cast(Object value) {
-        if (value != null) {
-            try {
-                if (value instanceof byte[]) {
-                    return (byte[]) value;
-                }
-            } catch (Exception e) {
-            }
-        }
-        return null;
-    }
+	@Override
+	protected byte[] cast(Object value) {
+		if (value != null) {
+			try {
+				if (value instanceof byte[]) {
+					return (byte[]) value;
+				}
+			} catch (Exception e) {
+			}
+		}
+		return null;
+	}
 
-    public BinarySchema _enum(List<byte[]> _enum) {
-        super.setEnum(_enum);
-        return this;
-    }
+	public BinarySchema _enum(List<byte[]> _enum) {
+		super.setEnum(_enum);
+		return this;
+	}
 
-    public BinarySchema addEnumItem(byte[] _enumItem) {
-        super.addEnumItemObject(_enumItem);
-        return this;
-    }
+	public BinarySchema addEnumItem(byte[] _enumItem) {
+		super.addEnumItemObject(_enumItem);
+		return this;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        return super.equals(o);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		return super.equals(o);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_default, _enum, super.hashCode());
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(_default, _enum, super.hashCode());
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class BinarySchema {\n");
-        sb.append("    ").append(toIndentedString(super.toString())).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class BinarySchema {\n");
+		sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 }
-

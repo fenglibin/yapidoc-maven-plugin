@@ -1,15 +1,20 @@
 package com.ztianzeng.apidoc;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import com.thoughtworks.qdox.model.JavaClass;
 import com.ztianzeng.apidoc.converter.AnnotatedType;
 import com.ztianzeng.apidoc.converter.ModelConverter;
 import com.ztianzeng.apidoc.converter.ModelConverterContextImpl;
 import com.ztianzeng.apidoc.converter.ResolvedSchema;
 import com.ztianzeng.apidoc.models.media.Schema;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author zhaotianzeng
@@ -18,97 +23,89 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Slf4j
 public class ModelConverters {
-    private static final ModelConverters SINGLETON = new ModelConverters();
-    private final List<ModelConverter> converters;
-    private final Set<String> skippedPackages = new HashSet<>();
-    private final Set<String> skippedClasses = new HashSet<>();
+	private static final ModelConverters SINGLETON = new ModelConverters();
+	private final List<ModelConverter> converters;
+	private final Set<String> skippedPackages = new HashSet<>();
+	private final Set<String> skippedClasses = new HashSet<>();
 
-    public static ModelConverters getInstance() {
-        return SINGLETON;
-    }
+	public static ModelConverters getInstance() {
+		return SINGLETON;
+	}
 
-    public ModelConverters() {
-        SourceBuilder sourceBuilder = new SourceBuilder();
-        converters = new CopyOnWriteArrayList<>();
-        converters.add(new ModelResolver(sourceBuilder));
-    }
+	public ModelConverters() {
+		SourceBuilder sourceBuilder = new SourceBuilder();
+		converters = new CopyOnWriteArrayList<>();
+		converters.add(new ModelResolver(sourceBuilder));
+	}
 
+	public Map<String, Schema> read(JavaClass type) {
+		return read(new AnnotatedType().javaClass(type));
+	}
 
-    public Map<String, Schema> read(JavaClass type) {
-        return read(new AnnotatedType().javaClass(type));
-    }
+	public Map<String, Schema> read(AnnotatedType type) {
+		Map<String, Schema> modelMap = new HashMap<>();
+		if (shouldProcess(type.getJavaClass())) {
+			ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
+			Schema resolve = context.resolve(type);
+			for (Map.Entry<String, Schema> entry : context.getDefinedModels().entrySet()) {
+				if (entry.getValue().equals(resolve)) {
+					modelMap.put(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+		return modelMap;
+	}
 
-    public Map<String, Schema> read(AnnotatedType type) {
-        Map<String, Schema> modelMap = new HashMap<>();
-        if (shouldProcess(type.getJavaClass())) {
-            ModelConverterContextImpl context = new ModelConverterContextImpl(
-                    converters);
-            Schema resolve = context.resolve(type);
-            for (Map.Entry<String, Schema> entry : context.getDefinedModels()
-                    .entrySet()) {
-                if (entry.getValue().equals(resolve)) {
-                    modelMap.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        return modelMap;
-    }
+	public Map<String, Schema> readAll(JavaClass type) {
+		return readAll(new AnnotatedType().javaClass(type));
+	}
 
+	public Map<String, Schema> readAll(AnnotatedType type) {
+		if (shouldProcess(type.getJavaClass())) {
+			ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
 
-    public Map<String, Schema> readAll(JavaClass type) {
-        return readAll(new AnnotatedType().javaClass(type));
-    }
+			context.resolve(type);
+			return context.getDefinedModels();
+		}
+		return new HashMap<>();
+	}
 
-    public Map<String, Schema> readAll(AnnotatedType type) {
-        if (shouldProcess(type.getJavaClass())) {
-            ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
+	public Schema resolve(JavaClass type) {
+		return resolve(new AnnotatedType().javaClass(type));
+	}
 
-            context.resolve(type);
-            return context.getDefinedModels();
-        }
-        return new HashMap<>();
-    }
+	public Schema resolve(AnnotatedType type) {
+		if (shouldProcess(type.getJavaClass())) {
+			ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
 
+			return context.resolve(type);
+		}
+		return null;
+	}
 
-    public Schema resolve(JavaClass type) {
-        return resolve(new AnnotatedType().javaClass(type));
-    }
+	private boolean shouldProcess(JavaClass javaClass) {
+		if (javaClass.isPrimitive()) {
+			return false;
+		}
+		String className = javaClass.getName();
+		for (String packageName : skippedPackages) {
+			if (className.startsWith(packageName)) {
+				return false;
+			}
+		}
+		return !skippedClasses.contains(className);
+	}
 
-    public Schema resolve(AnnotatedType type) {
-        if (shouldProcess(type.getJavaClass())) {
-            ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
+	public ResolvedSchema readAllAsResolvedSchema(AnnotatedType type) {
+		if (shouldProcess(type.getJavaClass())) {
+			ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
 
-            return context.resolve(type);
-        }
-        return null;
-    }
+			ResolvedSchema resolvedSchema = new ResolvedSchema();
+			resolvedSchema.schema = context.resolve(type);
+			resolvedSchema.referencedSchemas = context.getDefinedModels();
 
-
-    private boolean shouldProcess(JavaClass javaClass) {
-        if (javaClass.isPrimitive()) {
-            return false;
-        }
-        String className = javaClass.getName();
-        for (String packageName : skippedPackages) {
-            if (className.startsWith(packageName)) {
-                return false;
-            }
-        }
-        return !skippedClasses.contains(className);
-    }
-
-
-    public ResolvedSchema readAllAsResolvedSchema(AnnotatedType type) {
-        if (shouldProcess(type.getJavaClass())) {
-            ModelConverterContextImpl context = new ModelConverterContextImpl(
-                    converters);
-
-            ResolvedSchema resolvedSchema = new ResolvedSchema();
-            resolvedSchema.schema = context.resolve(type);
-            resolvedSchema.referencedSchemas = context.getDefinedModels();
-
-            return resolvedSchema;
-        }
-        return null;
-    }
+			return resolvedSchema;
+		}
+		return null;
+	}
 }

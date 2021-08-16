@@ -9,15 +9,15 @@ import lombok.Getter;
  */
 @Getter
 public class Result<T> {
-    private String msg;
-    private T data;
+	private String msg;
+	private T data;
 
-    protected Result() {
-    }
+	protected Result() {
+	}
 
-    private Result(String msg, T t) {
-        this.msg = msg;
-        this.data = t;
-    }
+	private Result(String msg, T t) {
+		this.msg = msg;
+		this.data = t;
+	}
 
 }

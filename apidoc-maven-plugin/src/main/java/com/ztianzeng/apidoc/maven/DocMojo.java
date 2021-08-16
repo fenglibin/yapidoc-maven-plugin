@@ -4,6 +4,31 @@
 
 package com.ztianzeng.apidoc.maven;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.filtering.MavenFilteringException;
+import org.apache.maven.shared.filtering.MavenResourcesExecution;
+import org.apache.maven.shared.filtering.MavenResourcesFiltering;
+
 import com.thoughtworks.qdox.model.JavaClass;
 import com.ztianzeng.apidoc.Reader;
 import com.ztianzeng.apidoc.SourceBuilder;
@@ -12,170 +37,145 @@ import com.ztianzeng.apidoc.maven.ssh.SSHCopy;
 import com.ztianzeng.apidoc.models.OpenAPI;
 import com.ztianzeng.apidoc.models.info.Info;
 import com.ztianzeng.apidoc.utils.Json;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.*;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.shared.filtering.MavenFilteringException;
-import org.apache.maven.shared.filtering.MavenResourcesExecution;
-import org.apache.maven.shared.filtering.MavenResourcesFiltering;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
 
 /**
  * @author tianzeng
  * @goal apidoc
  * @requiresDependencyResolution runtime
  */
-@Mojo(name = "openapi", defaultPhase = LifecyclePhase.PREPARE_PACKAGE,
-        requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "openapi", defaultPhase = LifecyclePhase.PREPARE_PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class DocMojo extends AbstractMojo {
-    @Parameter(defaultValue = "${project}", required = true, readonly = true)
-    private MavenProject mavenProject;
+	@Parameter(defaultValue = "${project}", required = true, readonly = true)
+	private MavenProject mavenProject;
 
-    /**
-     * 标题
-     */
-    @Parameter(property = "title", defaultValue = "doc")
-    private String title;
+	/**
+	 * 标题
+	 */
+	@Parameter(property = "title", defaultValue = "doc")
+	private String title;
 
-    /**
-     * 版本
-     */
-    @Parameter(property = "version", defaultValue = "1.0")
-    private String version;
+	/**
+	 * 版本
+	 */
+	@Parameter(property = "version", defaultValue = "1.0")
+	private String version;
 
-    /**
-     * 输出的文件名称
-     */
-    @Parameter(property = "outFileName", defaultValue = "doc.json")
-    private String outFileName;
+	/**
+	 * 输出的文件名称
+	 */
+	@Parameter(property = "outFileName", defaultValue = "doc.json")
+	private String outFileName;
 
-    /**
-     * 输出的文件名称
-     */
-    @Parameter(property = "toJar", defaultValue = "true")
-    private Boolean toJar;
-    /**
-     * 指定scp目标地址
-     */
-    @Parameter(property = "ssh")
-    private SSHConfig ssh;
+	/**
+	 * 输出的文件名称
+	 */
+	@Parameter(property = "toJar", defaultValue = "true")
+	private Boolean toJar;
+	/**
+	 * 指定scp目标地址
+	 */
+	@Parameter(property = "ssh")
+	private SSHConfig ssh;
 
-    /**
-     * The output directory into which to copy the resources.
-     */
-    @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
-    private File outputDirectory;
+	/**
+	 * The output directory into which to copy the resources.
+	 */
+	@Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
+	private File outputDirectory;
 
-    /**
-     *
-     */
-    @Parameter(defaultValue = "${session}", readonly = true, required = true)
-    protected MavenSession session;
-    /**
-     *
-     */
-    @Parameter(defaultValue = "${project}", readonly = true, required = true)
-    protected MavenProject project;
-    /**
-     * The character encoding scheme to be applied when filtering resources.
-     */
-    @Parameter(defaultValue = "${project.build.sourceEncoding}")
-    protected String encoding;
-    /**
-     *
-     */
-    @Component(role = MavenResourcesFiltering.class, hint = "default")
-    protected MavenResourcesFiltering mavenResourcesFiltering;
+	/**
+	 *
+	 */
+	@Parameter(defaultValue = "${session}", readonly = true, required = true)
+	protected MavenSession session;
+	/**
+	 *
+	 */
+	@Parameter(defaultValue = "${project}", readonly = true, required = true)
+	protected MavenProject project;
+	/**
+	 * The character encoding scheme to be applied when filtering resources.
+	 */
+	@Parameter(defaultValue = "${project.build.sourceEncoding}")
+	protected String encoding;
+	/**
+	 *
+	 */
+	@Component(role = MavenResourcesFiltering.class, hint = "default")
+	protected MavenResourcesFiltering mavenResourcesFiltering;
 
+	@Override
+	public void execute() {
 
-    @Override
-    public void execute() {
+		if (!mavenProject.getModules().isEmpty()) {
+			return;
+		}
+		try {
+			// 加载classloader
+			Set<URL> urls = new HashSet<>();
+			List<String> elements = mavenProject.getRuntimeClasspathElements();
+			for (String element : elements) {
+				urls.add(new File(element).toURI().toURL());
+			}
+			ClassLoader contextClassLoader = URLClassLoader.newInstance(urls.toArray(new URL[0]),
+					Thread.currentThread().getContextClassLoader());
 
-        if (!mavenProject.getModules().isEmpty()){
-            return;
-        }
-        try {
-            // 加载classloader
-            Set<URL> urls = new HashSet<>();
-            List<String> elements = mavenProject.getRuntimeClasspathElements();
-            for (String element : elements) {
-                urls.add(new File(element).toURI().toURL());
-            }
-            ClassLoader contextClassLoader = URLClassLoader.newInstance(
-                    urls.toArray(new URL[0]),
-                    Thread.currentThread().getContextClassLoader());
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
 
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
+		} catch (DependencyResolutionRequiredException | MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+		getLog().info("扫描地址 " + mavenProject.getBasedir().getPath());
+		execute(mavenProject.getBasedir().getPath());
+	}
 
+	private void execute(String url) {
 
-        } catch (DependencyResolutionRequiredException | MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        getLog().info("扫描地址 " + mavenProject.getBasedir().getPath());
-        execute(mavenProject.getBasedir().getPath());
-    }
+		SourceBuilder sourceBuilder = new SourceBuilder(url);
 
-    private void execute(String url) {
+		Reader reader = new Reader(new OpenAPI(), sourceBuilder);
 
-        SourceBuilder sourceBuilder = new SourceBuilder(url);
+		Set<JavaClass> controllerData;
+		controllerData = sourceBuilder.getControllerData();
 
-        Reader reader = new Reader(new OpenAPI(), sourceBuilder);
+		OpenAPI open = reader.read(controllerData);
+		Info info = new Info();
+		info.title(title);
+		info.setVersion(version);
 
-        Set<JavaClass> controllerData;
-        controllerData = sourceBuilder.getControllerData();
+		open.setInfo(info);
 
+		try {
 
-        OpenAPI open = reader.read(controllerData);
-        Info info = new Info();
-        info.title(title);
-        info.setVersion(version);
+			String filePath = outputDirectory.getPath() + "/" + outFileName;
+			File file = new File(filePath);
+			Json.mapper().writeValue(file, open);
+			getLog().info("target" + project.getBuild().getOutputDirectory());
 
-        open.setInfo(info);
+			if (ssh != null) {
+				getLog().info("输出到远程目录" + ssh);
+				SSHCopy.put(ssh, file);
+			}
+			if (toJar) {
+				getLog().info("打包到jar中");
+				List<String> combinedFilters = Collections.emptyList();
+				List<Resource> resources = new ArrayList<>();
+				Resource resource = new Resource();
+				resource.setIncludes(Collections.singletonList(outFileName));
+				resource.setDirectory(project.getBuild().getOutputDirectory());
+				resources.add(resource);
 
+				MavenResourcesExecution mavenResourcesExecution = new MavenResourcesExecution(resources,
+						getOutputDirectory(), project, encoding, combinedFilters, Collections.emptyList(), session);
+				mavenResourcesFiltering.filterResources(mavenResourcesExecution);
+			}
+		} catch (IOException | MavenFilteringException e) {
+			e.printStackTrace();
+		}
 
-        try {
+	}
 
-            String filePath = outputDirectory.getPath() + "/" + outFileName;
-            File file = new File(filePath);
-            Json.mapper().writeValue(file, open);
-            getLog().info("target" + project.getBuild().getOutputDirectory());
-
-            if (ssh != null) {
-                getLog().info("输出到远程目录" + ssh);
-                SSHCopy.put(ssh, file);
-            }
-            if (toJar) {
-                getLog().info("打包到jar中");
-                List<String> combinedFilters = Collections.emptyList();
-                List<Resource> resources = new ArrayList<>();
-                Resource resource = new Resource();
-                resource.setIncludes(Collections.singletonList(outFileName));
-                resource.setDirectory(project.getBuild().getOutputDirectory());
-                resources.add(resource);
-
-                MavenResourcesExecution mavenResourcesExecution =
-                        new MavenResourcesExecution(resources,
-                                getOutputDirectory(), project, encoding, combinedFilters,
-                                Collections.emptyList(), session);
-                mavenResourcesFiltering.filterResources(mavenResourcesExecution);
-            }
-        } catch (IOException | MavenFilteringException e) {
-            e.printStackTrace();
-        }
-
-
-    }
-
-    public File getOutputDirectory() {
-        return outputDirectory;
-    }
+	public File getOutputDirectory() {
+		return outputDirectory;
+	}
 }

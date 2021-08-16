@@ -24,49 +24,49 @@ import java.util.Objects;
 
 public class ObjectSchema extends Schema<Object> {
 
-    public ObjectSchema() {
-        super("object", null);
-    }
+	public ObjectSchema() {
+		super("object", null);
+	}
 
-    public ObjectSchema type(String type) {
-        super.setType(type);
-        return this;
-    }
+	public ObjectSchema type(String type) {
+		super.setType(type);
+		return this;
+	}
 
-    public ObjectSchema example(Object example) {
-        if (example != null) {
-            super.setExample(example.toString());
-        }
-        return this;
-    }
+	public ObjectSchema example(Object example) {
+		if (example != null) {
+			super.setExample(example.toString());
+		}
+		return this;
+	}
 
-    @Override
-    protected Object cast(Object value) {
-        return value;
-    }
+	@Override
+	protected Object cast(Object value) {
+		return value;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        return super.equals(o);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		return super.equals(o);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode());
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(super.hashCode());
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class ObjectSchema {\n");
-        sb.append("    ").append(toIndentedString(super.toString())).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class ObjectSchema {\n");
+		sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 }

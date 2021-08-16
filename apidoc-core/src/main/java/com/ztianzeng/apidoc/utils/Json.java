@@ -1,11 +1,11 @@
 package com.ztianzeng.apidoc.utils;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * JSON输出工具类
@@ -13,16 +13,16 @@ import java.io.IOException;
  * @author tianzeng
  */
 public class Json {
-	
+
 	private static ObjectMapper mapper;
-	
+
 	/**
 	 * 默认的JSON
 	 */
 	private Json() {
-	
+
 	}
-	
+
 	/**
 	 * default mapper
 	 *
@@ -34,14 +34,14 @@ public class Json {
 		}
 		return mapper;
 	}
-	
+
 	/**
 	 * pretty
 	 */
 	private static ObjectWriter pretty() {
 		return mapper().writer(new DefaultPrettyPrinter());
 	}
-	
+
 	/**
 	 * 输出String
 	 *
@@ -56,7 +56,7 @@ public class Json {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 输出到控制台
 	 *
@@ -69,7 +69,7 @@ public class Json {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * 输出到文件
 	 *

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
  * @date 2019-06-10 17:34
  */
 public class MyBeanParamResource {
-    @GetMapping("/")
-    public String getWithBeanParam(ListOfStringsBeanParam listOfStringsBean) {
-        return "result";
-    }
+	@GetMapping("/")
+	public String getWithBeanParam(ListOfStringsBeanParam listOfStringsBean) {
+		return "result";
+	}
 }

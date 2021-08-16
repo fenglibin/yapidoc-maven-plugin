@@ -1,11 +1,11 @@
 package com.ztianzeng.apidoc.utils;
 
-import com.thoughtworks.qdox.model.JavaAnnotation;
-import com.thoughtworks.qdox.model.JavaClass;
+import static com.ztianzeng.apidoc.constants.SpringMvcConstants.CONTROLLER_SET;
 
 import java.util.List;
 
-import static com.ztianzeng.apidoc.constants.SpringMvcConstants.CONTROLLER_SET;
+import com.thoughtworks.qdox.model.JavaAnnotation;
+import com.thoughtworks.qdox.model.JavaClass;
 
 /**
  * @author zhaotianzeng
@@ -14,9 +14,9 @@ import static com.ztianzeng.apidoc.constants.SpringMvcConstants.CONTROLLER_SET;
  */
 public final class SpringMvcUtils {
 	private SpringMvcUtils() {
-	
+
 	}
-	
+
 	/**
 	 * 是否为controller
 	 *

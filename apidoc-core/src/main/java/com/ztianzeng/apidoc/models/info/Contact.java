@@ -25,133 +25,130 @@ import java.util.Objects;
  */
 
 public class Contact {
-    private String name = null;
-    private String url = null;
-    private String email = null;
-    private java.util.Map<String, Object> extensions = null;
+	private String name = null;
+	private String url = null;
+	private String email = null;
+	private java.util.Map<String, Object> extensions = null;
 
-    /**
-     * returns the name property from a Contact instance.
-     *
-     * @return String name
-     **/
+	/**
+	 * returns the name property from a Contact instance.
+	 *
+	 * @return String name
+	 **/
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public Contact name(String name) {
-        this.name = name;
-        return this;
-    }
+	public Contact name(String name) {
+		this.name = name;
+		return this;
+	}
 
-    /**
-     * returns the url property from a Contact instance.
-     *
-     * @return String url
-     **/
+	/**
+	 * returns the url property from a Contact instance.
+	 *
+	 * @return String url
+	 **/
 
-    public String getUrl() {
-        return url;
-    }
+	public String getUrl() {
+		return url;
+	}
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
-    public Contact url(String url) {
-        this.url = url;
-        return this;
-    }
+	public Contact url(String url) {
+		this.url = url;
+		return this;
+	}
 
-    /**
-     * returns the email property from a Contact instance.
-     *
-     * @return String email
-     **/
+	/**
+	 * returns the email property from a Contact instance.
+	 *
+	 * @return String email
+	 **/
 
-    public String getEmail() {
-        return email;
-    }
+	public String getEmail() {
+		return email;
+	}
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
-    public Contact email(String email) {
-        this.email = email;
-        return this;
-    }
+	public Contact email(String email) {
+		this.email = email;
+		return this;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Contact contact = (Contact) o;
-        return Objects.equals(this.name, contact.name) &&
-                Objects.equals(this.url, contact.url) &&
-                Objects.equals(this.email, contact.email) &&
-                Objects.equals(this.extensions, contact.extensions);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Contact contact = (Contact) o;
+		return Objects.equals(this.name, contact.name) && Objects.equals(this.url, contact.url)
+				&& Objects.equals(this.email, contact.email) && Objects.equals(this.extensions, contact.extensions);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, url, email, extensions);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, url, email, extensions);
+	}
 
-    public java.util.Map<String, Object> getExtensions() {
-        return extensions;
-    }
+	public java.util.Map<String, Object> getExtensions() {
+		return extensions;
+	}
 
-    public void addExtension(String name, Object value) {
-        if (name == null || name.isEmpty() || !name.startsWith("x-")) {
-            return;
-        }
-        if (this.extensions == null) {
-            this.extensions = new java.util.LinkedHashMap<>();
-        }
-        this.extensions.put(name, value);
-    }
+	public void addExtension(String name, Object value) {
+		if (name == null || name.isEmpty() || !name.startsWith("x-")) {
+			return;
+		}
+		if (this.extensions == null) {
+			this.extensions = new java.util.LinkedHashMap<>();
+		}
+		this.extensions.put(name, value);
+	}
 
-    public void setExtensions(java.util.Map<String, Object> extensions) {
-        this.extensions = extensions;
-    }
+	public void setExtensions(java.util.Map<String, Object> extensions) {
+		this.extensions = extensions;
+	}
 
-    public Contact extensions(java.util.Map<String, Object> extensions) {
-        this.extensions = extensions;
-        return this;
-    }
+	public Contact extensions(java.util.Map<String, Object> extensions) {
+		this.extensions = extensions;
+		return this;
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Contact {\n");
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Contact {\n");
 
-        sb.append("    name: ").append(toIndentedString(name)).append("\n");
-        sb.append("    url: ").append(toIndentedString(url)).append("\n");
-        sb.append("    email: ").append(toIndentedString(email)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
+		sb.append("    name: ").append(toIndentedString(name)).append("\n");
+		sb.append("    url: ").append(toIndentedString(url)).append("\n");
+		sb.append("    email: ").append(toIndentedString(email)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o) {
+		if (o == null) {
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

@@ -8,24 +8,24 @@ package com.ztianzeng.apidoc.constants;
  * @date 2019-06-05 13:16
  */
 public enum RequestMethod {
-    /**
-     *
-     */
-    POST,
-    /**
-     *
-     */
-    GET,
+	/**
+	 *
+	 */
+	POST,
+	/**
+	 *
+	 */
+	GET,
 
-    /**
-     *
-     */
-    PUT,
+	/**
+	 *
+	 */
+	PUT,
 
-    /**
-     *
-     */
-    DELETE,
+	/**
+	 *
+	 */
+	DELETE,
 
-    ;
+	;
 }

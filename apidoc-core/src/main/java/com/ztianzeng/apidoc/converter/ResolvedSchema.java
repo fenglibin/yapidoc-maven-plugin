@@ -1,10 +1,10 @@
 package com.ztianzeng.apidoc.converter;
 
-import com.ztianzeng.apidoc.models.media.Schema;
-
 import java.util.Map;
 
+import com.ztianzeng.apidoc.models.media.Schema;
+
 public class ResolvedSchema {
-    public Schema schema;
-    public Map<String, Schema> referencedSchemas;
+	public Schema schema;
+	public Map<String, Schema> referencedSchemas;
 }

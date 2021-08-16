@@ -1,5 +1,10 @@
 package com.ztianzeng.apidoc.deserializer;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -10,33 +15,26 @@ import com.ztianzeng.apidoc.models.PathItem;
 import com.ztianzeng.apidoc.models.Paths;
 import com.ztianzeng.apidoc.utils.Json;
 
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public class PathsDeserializer extends JsonDeserializer<Paths> {
-    @Override
-    public Paths deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-        Paths result = new Paths();
-        JsonNode node = jp.getCodec().readTree(jp);
-        ObjectNode objectNode = (ObjectNode) node;
-        Map<String, Object> extensions = new LinkedHashMap<>();
-        for (Iterator<String> it = objectNode.fieldNames(); it.hasNext(); ) {
-            String childName = it.next();
-            JsonNode child = objectNode.get(childName);
-            // if name start with `x-` consider it an extesion
-            if (childName.startsWith("x-")) {
-                extensions.put(childName, Json.mapper().convertValue(child, Object.class));
-            } else {
-                result.put(childName, Json.mapper().convertValue(child, PathItem.class));
-            }
-        }
-        if (!extensions.isEmpty()) {
-            result.setExtensions(extensions);
-        }
-        return result;
-    }
+	@Override
+	public Paths deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		Paths result = new Paths();
+		JsonNode node = jp.getCodec().readTree(jp);
+		ObjectNode objectNode = (ObjectNode) node;
+		Map<String, Object> extensions = new LinkedHashMap<>();
+		for (Iterator<String> it = objectNode.fieldNames(); it.hasNext();) {
+			String childName = it.next();
+			JsonNode child = objectNode.get(childName);
+			// if name start with `x-` consider it an extesion
+			if (childName.startsWith("x-")) {
+				extensions.put(childName, Json.mapper().convertValue(child, Object.class));
+			} else {
+				result.put(childName, Json.mapper().convertValue(child, PathItem.class));
+			}
+		}
+		if (!extensions.isEmpty()) {
+			result.setExtensions(extensions);
+		}
+		return result;
+	}
 }

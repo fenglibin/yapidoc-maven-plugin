@@ -1,9 +1,9 @@
 package com.ztianzeng.apidoc.test.res;
 
-import lombok.Data;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import lombok.Data;
 
 /**
  * @author zhaotianzeng
@@ -12,18 +12,18 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class Pet {
-    /**
-     * The pet type
-     */
-    @NotEmpty
-    private String type;
+	/**
+	 * The pet type
+	 */
+	@NotEmpty
+	private String type;
 
-    /**
-     * The name of the pet
-     */
-    @NotEmpty
-    private String name;
+	/**
+	 * The name of the pet
+	 */
+	@NotEmpty
+	private String name;
 
-    @NotNull
-    private Boolean isDomestic;
+	@NotNull
+	private Boolean isDomestic;
 }
