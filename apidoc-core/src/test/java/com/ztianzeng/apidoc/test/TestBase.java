@@ -11,7 +11,7 @@ import com.ztianzeng.apidoc.SourceBuilder;
 
 public abstract class TestBase {
 	static ObjectMapper mapper;
-	static SourceBuilder sourceBuilder = new SourceBuilder();
+	static SourceBuilder sourceBuilder = SourceBuilder.INSTANCE;
 	static JavaProjectBuilder builder = sourceBuilder.getBuilder();
 
 	public static ObjectMapper mapper() {
@@ -25,7 +25,7 @@ public abstract class TestBase {
 	}
 
 	protected ModelResolver modelResolver() {
-		return new ModelResolver(new SourceBuilder());
+		return new ModelResolver(SourceBuilder.INSTANCE);
 	}
 
 	protected void prettyPrint(Object o) {

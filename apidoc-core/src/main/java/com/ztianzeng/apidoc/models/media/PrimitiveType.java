@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -137,6 +138,18 @@ public enum PrimitiveType {
 		public Schema createProperty() {
 			return new Schema().type("object");
 		}
+	},
+	LIST(List.class, "list") {
+		@Override
+		public Schema createProperty() {
+			return new Schema().type("list");
+		}
+	},
+	MAP(Map.class, "map") {
+		@Override
+		public Schema createProperty() {
+			return new Schema().type("map");
+		}
 	};
 
 	private static final Map<String, PrimitiveType> KEY_CLASSES;
@@ -228,6 +241,8 @@ public enum PrimitiveType {
 		addKeys(keyClasses, DATE_TIME, Calendar.class.getName());
 		addKeys(keyClasses, FILE, java.io.File.class.getName());
 		addKeys(keyClasses, OBJECT, Object.class.getName());
+		addKeys(keyClasses, LIST, List.class.getName());
+		addKeys(keyClasses, MAP, Map.class.getName());
 		KEY_CLASSES = Collections.unmodifiableMap(keyClasses);
 
 		final Map<Class<?>, PrimitiveType> baseClasses = new HashMap<Class<?>, PrimitiveType>();

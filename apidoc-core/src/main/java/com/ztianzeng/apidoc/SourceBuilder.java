@@ -22,10 +22,12 @@ public class SourceBuilder {
 
 	private Collection<JavaClass> javaClasses;
 
+	public static SourceBuilder INSTANCE = new SourceBuilder();
+
 	/**
 	 * 加载Java源文件到builder中
 	 */
-	public SourceBuilder() {
+	private SourceBuilder() {
 		loadJavaFiles("src");
 	}
 

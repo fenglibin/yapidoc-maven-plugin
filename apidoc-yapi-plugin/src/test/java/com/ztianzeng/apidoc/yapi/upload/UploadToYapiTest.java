@@ -1,7 +1,9 @@
 package com.ztianzeng.apidoc.yapi.upload;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import com.ztianzeng.apidoc.models.OpenAPI;
@@ -214,9 +216,16 @@ public class UploadToYapiTest {
 
 	@Test
 	public void upload() throws IOException {
-		OpenAPI openAPI = Json.mapper().readValue(openAPI_S, OpenAPI.class);
+		String json = FileUtils.readFileToString(
+				new File("/home/fenglibin/data/code/gitee/ip-limiter/ip-limiter-dashboard/target/classes/test.json"),
+				"utf-8");
+		json = FileUtils.readFileToString(
+				new File("/home/fenglibin/data/code/gitee/hasentinel/hasentinel-dashboard/target/classes/test.json"),
+				"utf-8");
+		OpenAPI openAPI = Json.mapper().readValue(json, OpenAPI.class);
 
-		UploadToYapi uploadToYapi = new UploadToYapi("511b6c128d2c7ff5b4cc", "http://yapi.cnabc-inc.com");
+		UploadToYapi uploadToYapi = new UploadToYapi("23e879a4e7926148da85aacf27595ec4cbc6f2fe2c037b7dda4116a7e698a96b",
+				"http://yapi.imlaidian.com/");
 		uploadToYapi.upload(openAPI, true);
 	}
 }

@@ -1,4 +1,4 @@
-package com.ztianzeng.apidoc.yapi.constant;
+package com.ztianzeng.apidoc.maven.yapi.constant;
 
 /**
  * yapi 接口

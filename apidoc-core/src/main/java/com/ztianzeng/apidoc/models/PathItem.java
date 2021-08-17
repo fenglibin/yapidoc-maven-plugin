@@ -25,9 +25,9 @@ import com.ztianzeng.apidoc.models.parameters.Parameter;
 import com.ztianzeng.apidoc.models.servers.Server;
 
 /**
- * PathItem
+ * PathItem，定义当前方法的类型，如get、put、post、delete等
  *
- * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#pathItemObject"
+ * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#path-item-object"
  */
 
 public class PathItem {

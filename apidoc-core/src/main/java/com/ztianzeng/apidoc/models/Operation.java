@@ -33,7 +33,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
- * Operation
+ * Operation，定义接口的描述、参数、请求体、响应等内容
  *
  * @see "https://github.com/OAI/OpenAPI-Specification/blob/3.0.1/versions/3.0.1.md#operationObject"
  */
@@ -41,19 +41,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Operation {
-	private List<String> tags = null;
-	private String summary = null;
-	private String description = null;
-	private ExternalDocumentation externalDocs = null;
-	private String operationId = null;
-	private List<Parameter> parameters = null;
-	private RequestBody requestBody = null;
-	private ApiResponses responses = null;
-	private Map<String, Callback> callbacks = null;
-	private Boolean deprecated = null;
-	private List<SecurityRequirement> security = null;
-	private List<Server> servers = null;
-	private Map<String, Object> extensions = null;
+	private List<String> tags;
+	private String summary;
+	private String description;
+	private ExternalDocumentation externalDocs;
+	private String operationId;
+	private List<Parameter> parameters;
+	private RequestBody requestBody;
+	private ApiResponses responses;
+	private Map<String, Callback> callbacks;
+	private Boolean deprecated;
+	private List<SecurityRequirement> security;
+	private List<Server> servers;
+	private Map<String, Object> extensions;
 
 	/**
 	 * returns the tags property from a Operation instance.

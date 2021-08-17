@@ -33,9 +33,8 @@ public class ModelConverters {
 	}
 
 	public ModelConverters() {
-		SourceBuilder sourceBuilder = new SourceBuilder();
 		converters = new CopyOnWriteArrayList<>();
-		converters.add(new ModelResolver(sourceBuilder));
+		converters.add(new ModelResolver(SourceBuilder.INSTANCE));
 	}
 
 	public Map<String, Schema> read(JavaClass type) {
@@ -56,22 +55,22 @@ public class ModelConverters {
 		return modelMap;
 	}
 
-	public Map<String, Schema> readAll(JavaClass type) {
-		return readAll(new AnnotatedType().javaClass(type));
+	public Map<String, Schema> readAll(JavaClass type,String parameterName) {
+		return readAll(new AnnotatedType().javaClass(type).propertyName(parameterName));
 	}
 
 	public Map<String, Schema> readAll(AnnotatedType type) {
 		if (shouldProcess(type.getJavaClass())) {
 			ModelConverterContextImpl context = new ModelConverterContextImpl(converters);
 
-			context.resolve(type);
+			Schema schema = context.resolve(type);
 			return context.getDefinedModels();
 		}
 		return new HashMap<>();
 	}
 
-	public Schema resolve(JavaClass type) {
-		return resolve(new AnnotatedType().javaClass(type));
+	public Schema resolve(JavaClass type,String parameterName) {
+		return resolve(new AnnotatedType().javaClass(type).propertyName(parameterName));
 	}
 
 	public Schema resolve(AnnotatedType type) {

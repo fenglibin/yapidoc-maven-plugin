@@ -22,6 +22,7 @@ import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaField;
 import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 import com.ztianzeng.apidoc.converter.AnnotatedType;
 import com.ztianzeng.apidoc.converter.ModelConverter;
@@ -61,24 +62,51 @@ public class ModelResolver implements ModelConverter {
 
 		// 分析目标类信息
 		JavaClass targetClass = annotatedType.getJavaClass();
-		com.fasterxml.jackson.databind.JavaType targetType = mapper
-				.constructType(DocUtils.getTypeForName(targetClass.getBinaryName()));
+		if (targetClass == null) {
+			log.warn("annotatedType:" + annotatedType.getClass() + "获取到的Java class为空！");
+		}
+		try {
+			targetClass.isEnum();
+			targetClass.getName();
+		} catch (Exception e) {
+			log.debug("获取目标类:" + targetClass.getClass() + " 是否枚举类型或名称发生异常，将该类替换为java.lang.Object类");
+			targetClass = SourceBuilder.INSTANCE.getBuilder().getClassByName("java.lang.Object");
+		}
+
+		com.fasterxml.jackson.databind.JavaType targetType = null;
+		try {
+			targetType = mapper.constructType(DocUtils.getTypeForName(targetClass.getBinaryName()));
+		} catch (Exception e) {
+			log.debug("TargetClass:" + targetClass.getClass() + " binary name is:" + targetClass.getBinaryName()
+					+ " 找不到对应的类型，使用Object代替");
+			targetType = mapper.constructType(DocUtils.getTypeForName("java.lang.Object"));
+		}
 
 		if (annotatedType.getJavaType() != null) {
 			targetType = annotatedType.getJavaType();
 		}
+
+		// 读取指定Bean的属性，并构造成一个用于后续处理的BeanDescription
+		// 问题１：如果参数为List和Map时，这两个对象本身都没有属性值
 		BeanDescription beanDesc = mapper.getSerializationConfig().introspect(targetType);
 
+		// 定义输入和输出数据类型的模式对象，这些类型可以是对象，也可以是基本数据类型、数组等。
 		Schema schema = new Schema();
 
 		String parentName = findAnnotatedTypeName(annotatedType);
-		// 看有没有被解析过，解析过直接返回
+		// 解析该类型，如果已经解析过则直接返回，如果没有解析过则执行解析
 		Schema resolvedModel = context.resolve(annotatedType);
 		if (resolvedModel != null) {
 			if (parentName.equals(resolvedModel.getName())) {
 				return resolvedModel;
 			}
 		}
+
+		schema.name(parentName);
+		schema.setType(targetClass.getBinaryName());
+		// 拼装泛型类型字符串
+		String fileTypeInfo = DocUtils.getParameterFiledInfo(targetClass);
+		schema.setDescription("参数类型："+fileTypeInfo);
 
 		JavaClass genericityContentType = null;
 		// 如果泛型大于0
@@ -89,23 +117,28 @@ public class ModelResolver implements ModelConverter {
 						.resolveAsRef(annotatedType.isResolveAsRef())
 						.jsonViewAnnotation(annotatedType.getJsonViewAnnotation()).skipSchemaName(true)
 						.schemaProperty(true).propertyName(targetClass.getName());
-				context.resolve(aType);
+				Schema genericSchema = context.resolve(aType);// 解析后的泛型不用增加到字段中去？
 			}
 		}
 
-		if (targetClass.isEnum()) {
-			for (JavaField enumConstant : targetClass.getEnumConstants()) {
-				schema.addEnumItemObject(enumConstant.getComment() + " " + enumConstant.getName());
+		try {
+			if (targetClass.isEnum()) {
+				for (JavaField enumConstant : targetClass.getEnumConstants()) {
+					schema.addEnumItemObject(enumConstant.getComment() + " " + enumConstant.getName());
+				}
+				schema.setType(PrimitiveType.STRING.getCommonName());
+			} else {
+				// 转换成OpenApi定义的字段信息
+				PrimitiveType parentType = PrimitiveType.fromType(targetClass.getBinaryName());
+				schema.setType(Optional.ofNullable(parentType).orElse(PrimitiveType.OBJECT).getCommonName());
+				//schema.setType(parentType==null?targetClass.getName():parentType.getCommonName());
 			}
-
-			schema.setType(PrimitiveType.STRING.getCommonName());
-		} else {
+		} catch (Exception e) {
 			// 转换成OpenApi定义的字段信息
-			PrimitiveType parentType = PrimitiveType.fromType(targetClass.getBinaryName());
-			schema.setType(Optional.ofNullable(parentType).orElse(PrimitiveType.OBJECT).getCommonName());
+			schema.setType(PrimitiveType.OBJECT.getCommonName());
 		}
 
-		if (DocUtils.isPrimitive(targetClass.getName())) {
+		if (DocUtils.isPrimitive(targetClass.getName())) {// 基础类型就不用继续往下面解析了，到这里就返回
 			if (targetClass.isArray()) {
 				Schema array = new Schema();
 				array.setType(schema.getType());
@@ -113,7 +146,6 @@ public class ModelResolver implements ModelConverter {
 			}
 			return schema;
 		}
-		schema.name(parentName);
 
 		// 分析类的字段
 		List<JavaField> fields = new ArrayList<>();
@@ -126,18 +158,20 @@ public class ModelResolver implements ModelConverter {
 		}
 
 		if (targetClass.isA(Map.class.getName())) {
+			// 泛型信息
 			List<JavaType> tar = new LinkedList<>();
 			if (targetClass instanceof DefaultJavaParameterizedType) {
 				tar = ((DefaultJavaParameterizedType) targetClass).getActualTypeArguments();
+			} else if (targetClass instanceof DefaultJavaClass) {
+				tar = ((DefaultJavaClass) targetClass).getImplements();
 			}
-			// 泛型信息
 
 			if (tar.isEmpty()) {
 				return null;
 			}
-			JavaType javaType = tar.get(1);
+			JavaType javaType = tar.get(1);//取Value类型做为泛型
 
-			Schema addPropertiesSchema = context
+			Schema<?> addPropertiesSchema = context
 					.resolve(new AnnotatedType().javaClass(builder.getClassByName(javaType.getFullyQualifiedName()))
 							.schemaProperty(annotatedType.isSchemaProperty()).skipSchemaName(true)
 							.resolveAsRef(annotatedType.isResolveAsRef())
@@ -159,16 +193,26 @@ public class ModelResolver implements ModelConverter {
 									: addPropertiesSchema.getName());
 				}
 			}
-			schema = new MapSchema().additionalProperties(addPropertiesSchema);
+			Schema<?> mapSchema = new MapSchema().additionalProperties(addPropertiesSchema);
+			mapSchema.name(schema.getName());
+			mapSchema.addProperties(annotatedType.getPropertyName(), schema);
+			mapSchema.setDescription(schema.getDescription());
+			schema = mapSchema;
 		} else if (targetClass.isA(Collection.class.getName()) || targetClass.isA(List.class.getName())) {
+
 			// 泛型信息
-			List<JavaType> tar = ((DefaultJavaParameterizedType) targetClass).getActualTypeArguments();
+			List<JavaType> tar = new LinkedList<>();
+			if (targetClass instanceof DefaultJavaParameterizedType) {//如果存在泛型信息，此处获取真正的类型信息
+				tar = ((DefaultJavaParameterizedType) targetClass).getActualTypeArguments();
+			} else if (targetClass instanceof DefaultJavaClass) {
+				tar = ((DefaultJavaClass) targetClass).getImplements();
+			}
 			if (tar.isEmpty()) {
 				return null;
 			}
 			JavaType javaType = tar.get(0);
-			// 处理集合
-			Schema items = context.resolve(new AnnotatedType()
+			// 处理泛型类型，通过递归的方式
+			Schema<?> items = context.resolve(new AnnotatedType()
 					.javaClass(builder.getClassByName(javaType.getBinaryName()))
 					.schemaProperty(annotatedType.isSchemaProperty()).skipSchemaName(true)
 					.resolveAsRef(annotatedType.isResolveAsRef()).propertyName(annotatedType.getPropertyName())
@@ -177,12 +221,17 @@ public class ModelResolver implements ModelConverter {
 			if (items == null) {
 				return null;
 			}
-			schema = new ArraySchema().items(items);
-		}
 
+			schema.addProperties(javaType.getBinaryName(), items);
+			Schema<?> arraySchema = new ArraySchema().items(items);
+			arraySchema.name(schema.getName());
+			arraySchema.addProperties(annotatedType.getPropertyName(), schema);
+			schema = arraySchema;
+		}
+		
 		Map<String, JavaField> collect = fields.stream()
 				.collect(Collectors.toMap(JavaField::getName, r -> r, (r1, r2) -> r1));
-
+		
 		for (BeanPropertyDefinition propertyDef : beanDesc.findProperties()) {
 			JavaField field = collect.get(propertyDef.getName());
 			if (field == null) {
@@ -193,8 +242,10 @@ public class ModelResolver implements ModelConverter {
 			}
 
 			JavaClass type = field.getType();
-
 			String typeName = findName(genericityContentType == null ? type : genericityContentType);
+			if (typeName == null) {
+				return null;
+			}
 			AnnotatedType aType = new AnnotatedType().javaClass(type).javaType(propertyDef.getPrimaryType())
 					.parent(schema).resolveAsRef(annotatedType.isResolveAsRef())
 					.jsonViewAnnotation(annotatedType.getJsonViewAnnotation()).skipSchemaName(true).schemaProperty(true)
@@ -207,6 +258,9 @@ public class ModelResolver implements ModelConverter {
 			propSchema.setName(name);
 			// 处理泛型
 			if (genericityContentType != null && ("T".equals(field.getType().getGenericFullyQualifiedName())
+					|| "R".equals(field.getType().getGenericFullyQualifiedName())
+					|| "U".equals(field.getType().getGenericFullyQualifiedName())
+					|| field.getType().getGenericFullyQualifiedName().length() == 1
 					|| "java.lang.Object".equals(field.getType().getGenericFullyQualifiedName()))) {
 				if (DocUtils.isList(genericityContentType.getBinaryName())) {
 					aType = new AnnotatedType().javaClass(genericityContentType).parent(schema)
@@ -256,7 +310,6 @@ public class ModelResolver implements ModelConverter {
 			}
 			schema.addProperties(name, propSchema);
 		}
-
 		return schema;
 	}
 
@@ -270,8 +323,15 @@ public class ModelResolver implements ModelConverter {
 	 * @param type
 	 */
 	public String findName(JavaClass type, StringBuilder stringBuilder) {
-
-		stringBuilder.append(type.getName());
+		if (type == null) {
+			return null;
+		}
+		try {
+			stringBuilder.append(type.getName());
+		} catch (NullPointerException e) {
+			log.debug("获取type:" + type.getClass() + "的名称发生空指针异常！");
+			return null;
+		}
 		if (type instanceof DefaultJavaParameterizedType) {
 			List<JavaType> ref = ((DefaultJavaParameterizedType) type).getActualTypeArguments();
 			if (!ref.isEmpty()) {

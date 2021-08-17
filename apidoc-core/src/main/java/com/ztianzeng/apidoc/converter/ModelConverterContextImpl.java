@@ -11,14 +11,13 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.thoughtworks.qdox.model.JavaClass;
 import com.ztianzeng.apidoc.models.media.Schema;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 public class ModelConverterContextImpl implements ModelConverterContext {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ModelConverterContextImpl.class);
 
 	private final List<ModelConverter> converters;
 	private final Map<String, Schema> modelByName;
@@ -84,7 +83,7 @@ public class ModelConverterContextImpl implements ModelConverterContext {
 		Schema resolved = null;
 		if (converters.hasNext()) {
 			ModelConverter converter = converters.next();
-			LOGGER.trace("trying extension " + converter);
+			log.debug("model converter: " + converter);
 			resolved = converter.resolve(type, this, converters);
 		}
 		if (resolved != null) {

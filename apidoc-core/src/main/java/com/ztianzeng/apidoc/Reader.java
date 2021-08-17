@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,8 @@ import com.ztianzeng.apidoc.utils.DocUtils;
 import com.ztianzeng.apidoc.utils.Json;
 import com.ztianzeng.apidoc.utils.QdoxUtils;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * open api
  *
@@ -50,6 +53,7 @@ import com.ztianzeng.apidoc.utils.QdoxUtils;
  * @version V1.0
  * @date 2019-06-07 12:01
  */
+@Slf4j
 public class Reader {
 	private final OpenAPI openAPI;
 	private Paths paths;
@@ -60,7 +64,7 @@ public class Reader {
 
 	public Reader() {
 		this.openAPI = new OpenAPI();
-		this.sourceBuilder = new SourceBuilder();
+		this.sourceBuilder = SourceBuilder.INSTANCE;
 		paths = new Paths();
 		components = new Components();
 		this.builder = sourceBuilder.getBuilder();
@@ -71,7 +75,7 @@ public class Reader {
 		this.openAPI = openAPI;
 		paths = new Paths();
 		components = new Components();
-		this.sourceBuilder = new SourceBuilder();
+		this.sourceBuilder = SourceBuilder.INSTANCE;
 		this.builder = sourceBuilder.getBuilder();
 		mapper = Json.mapper();
 	}
@@ -109,7 +113,6 @@ public class Reader {
 			RequestMethod methodType;
 			boolean deprecated = !QdoxUtils.getAnnotation(method, Deprecated.class).isPresent();
 
-			;
 			List<JavaAnnotation> annotations = method.getAnnotations();
 
 			JavaAnnotation requestMapping = null;
@@ -119,6 +122,7 @@ public class Reader {
 					break;
 				}
 			}
+			// 判断是否为接口方法，如果不是则不处理
 			if (requestMapping == null) {
 				continue;
 			}
@@ -126,9 +130,11 @@ public class Reader {
 			String url = getRequestMappingUrl(requestMapping);
 			methodType = getRequestMappingMethod(requestMapping);
 
+			// 获取接口上定义的方法地址
 			if (url != null) {
 				url = url.replaceAll("\"", "").trim();
 			}
+			// 将类上定义的地址与接口上定义的地址进行拼接，得到完整的地址
 			if (classBaseUrl != null) {
 				url = classBaseUrl + url;
 			}
@@ -153,9 +159,15 @@ public class Reader {
 		return openAPI;
 	}
 
-	public OpenAPI read(Set<JavaClass> classes) {
+	/**
+	 * 对Controller进行分析
+	 * 
+	 * @param controllerClasses
+	 * @return
+	 */
+	public OpenAPI read(Set<JavaClass> controllerClasses) {
 
-		for (JavaClass aClass : classes) {
+		for (JavaClass aClass : controllerClasses) {
 			OpenAPI read = read(aClass);
 
 			paths.putAll(read.getPaths());
@@ -247,22 +259,27 @@ public class Reader {
 	}
 
 	/**
-	 * 处理方法
+	 * 解析方法，解析接口的描述、参数、请求体、响应等内容
 	 *
 	 * @return
 	 */
 	public Operation parseMethod(JavaMethod javaMethod, boolean deprecated, String tag) {
-		Operation build = Operation.builder().deprecated(deprecated).build();
-		setDescAndSummary(build, javaMethod);
+		Operation operation = Operation.builder().deprecated(deprecated).build();
+		
+		//设置方法上的详情和概述
+		setDescAndSummary(operation, javaMethod);
 		if (StringUtils.isNotBlank(tag)) {
-			build.addTagsItem(tag);
+			operation.addTagsItem(tag);
 		}
-		setParametersItem(build, javaMethod);
+		//解析入参方法的请求参数
+		setParametersItem(operation, javaMethod);
 
-		setRequestBody(build, javaMethod);
+		//解析入参方法为请求体的参数，即解析以注解@RequestBody标注的参数
+		setRequestBody(operation, javaMethod);
 
-		// 处理方法的信息
-		Map<String, Schema> schemaMap = ModelConverters.getInstance().readAll(javaMethod.getReturns());
+		// 处理方法的返回类型
+		Map<String, Schema> schemaMap = ModelConverters.getInstance().readAll(javaMethod.getReturns(),
+				javaMethod.getName());
 
 		ApiResponses responses = new ApiResponses();
 
@@ -276,7 +293,7 @@ public class Reader {
 		Content content = new Content();
 		MediaType mediaType = new MediaType();
 
-		Schema objectSchema = ModelConverters.getInstance().resolve(javaMethod.getReturns());
+		Schema objectSchema = ModelConverters.getInstance().resolve(javaMethod.getReturns(),javaMethod.getName());
 
 		if (objectSchema != null) {
 			if (objectSchema instanceof ArraySchema) {
@@ -305,23 +322,25 @@ public class Reader {
 			components.addSchemas(key, schema);
 		});
 
-		build.setResponses(responses);
-		return build;
+		operation.setResponses(responses);
+		return operation;
 	}
 
 	/**
-	 * 设置方法的请求参数
+	 * 解析入参方法的请求参数
 	 */
-	private void setParametersItem(Operation apiMethodDoc, JavaMethod method) {
+	private void setParametersItem(Operation operation, JavaMethod method) {
 		List<JavaParameter> parameters = method.getParameters();
 
+		// 定义在方法上的参数描述说明
 		Map<String, String> paramDesc = getParamTag(method);
 
 		for (JavaParameter parameter : parameters) {
 			if (isContentBody(parameter.getAnnotations())) {
-				return;
+				continue;
 			}
-			boolean required = true;
+			AtomicBoolean requiredBoolean = new AtomicBoolean(true);
+
 			String name = parameter.getName();
 			for (JavaAnnotation javaAnnotation : parameter.getAnnotations()) {
 				String annotationName = javaAnnotation.getType().getFullyQualifiedName();
@@ -329,22 +348,24 @@ public class Reader {
 					if (StringUtils.isNotEmpty((String) javaAnnotation.getNamedParameter("name"))) {
 						name = (String) javaAnnotation.getNamedParameter("name");
 					}
-					required = (Boolean) javaAnnotation.getNamedParameter("required");
+					requiredBoolean.set((Boolean) javaAnnotation.getNamedParameter("required"));
 				}
 			}
-			// 如果是私有属性直接便利
+			// 如果是私有属性直接返回
 			if (DocUtils.isPrimitive(parameter.getType().getBinaryName())) {
 				Parameter inputParameter = new Parameter();
 				inputParameter.in("query");
 				inputParameter.setName(name);
-				inputParameter.setRequired(required);
+				inputParameter.setRequired(requiredBoolean.get());
 				Schema schema = new Schema();
-
-				inputParameter.setDescription(paramDesc.get(parameter.getName()));
+				String desc = StringUtils.isEmpty(paramDesc.get(parameter.getName())) ? ""
+						: paramDesc.get(parameter.getName()) + "，";
+				inputParameter.setDescription(desc + "参数类型：" + parameter.getType().getCanonicalName());
 				inputParameter.setSchema(schema);
-				apiMethodDoc.addParametersItem(inputParameter);
+				operation.addParametersItem(inputParameter);
 			} else {
-				Map<String, Schema> stringSchemaMap = ModelConverters.getInstance().readAll(parameter.getJavaClass());
+				Map<String, Schema> stringSchemaMap = ModelConverters.getInstance().readAll(parameter.getJavaClass(),
+						parameter.getName());
 				for (String s : stringSchemaMap.keySet()) {
 					Schema schema = stringSchemaMap.get(s);
 					Map<String, Schema> properties = schema.getProperties();
@@ -356,8 +377,15 @@ public class Reader {
 						inputParameter.setName(k);
 						inputParameter.in("query");
 						inputParameter.setSchema(v);
-						apiMethodDoc.addParametersItem(inputParameter);
+						v.setType(parameter.getType().getCanonicalName());
+						inputParameter.setRequired(requiredBoolean.get());
+						String desc = StringUtils.isEmpty(paramDesc.get(parameter.getName())) ? ""
+								: paramDesc.get(parameter.getName()) + "，";
+						inputParameter.setDescription(
+								desc + v.getDescription());
+						operation.addParametersItem(inputParameter);
 					});
+
 				}
 
 			}
@@ -367,20 +395,24 @@ public class Reader {
 	}
 
 	/**
-	 * 设置方法的请求参数
+	 * 解析入参方法为请求体的参数，即解析以注解@RequestBody标注的参数
 	 */
-	private void setRequestBody(Operation apiMethodDoc, JavaMethod method) {
+	private void setRequestBody(Operation operation, JavaMethod method) {
 		List<JavaParameter> parameters = method.getParameters();
 
 		for (int i = 0; i < parameters.size(); i++) {
 			JavaParameter parameter = parameters.get(i);
 			if (!isContentBody(parameter.getAnnotations())) {
+				continue;
+			}
+
+			Schema objectSchema = ModelConverters.getInstance().resolve(parameter.getJavaClass(),parameter.getName());
+			if (objectSchema == null) {
 				return;
 			}
 
-			Schema objectSchema = ModelConverters.getInstance().resolve(parameter.getJavaClass());
-
-			Map<String, Schema> schemaMap = ModelConverters.getInstance().readAll(parameter.getJavaClass());
+			Map<String, Schema> schemaMap = ModelConverters.getInstance().readAll(parameter.getJavaClass(),
+					parameter.getName());
 
 			if (objectSchema instanceof ArraySchema) {
 				((ArraySchema) objectSchema).getItems()
@@ -400,9 +432,11 @@ public class Reader {
 			requestBody.content(content);
 
 			schemaMap.forEach((key, schema) -> {
-				components.addSchemas(key, schema);
+				if(key!=null) {
+					components.addSchemas(key, schema);
+				}
 			});
-			apiMethodDoc.setRequestBody(requestBody);
+			operation.setRequestBody(requestBody);
 		}
 
 	}
@@ -410,10 +444,10 @@ public class Reader {
 	/**
 	 * 设置方法上的详情和概述
 	 *
-	 * @param apiMethodDoc
+	 * @param operation
 	 * @param method
 	 */
-	private void setDescAndSummary(Operation apiMethodDoc, JavaMethod method) {
+	private void setDescAndSummary(Operation operation, JavaMethod method) {
 		String comment = method.getComment();
 
 		if (comment != null) {
@@ -424,8 +458,8 @@ public class Reader {
 				desc = m.group(0).replace("<p>", "").replace("</p>", "").trim();
 				comment = m.replaceAll("");
 			}
-			apiMethodDoc.setSummary(comment.trim());
-			apiMethodDoc.setDescription(desc);
+			operation.setSummary(comment.trim());
+			operation.setDescription(desc);
 		}
 
 	}

@@ -14,7 +14,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Resource;
@@ -28,12 +30,15 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.filtering.MavenFilteringException;
 import org.apache.maven.shared.filtering.MavenResourcesExecution;
 import org.apache.maven.shared.filtering.MavenResourcesFiltering;
+import org.codehaus.plexus.util.StringUtils;
 
+import com.google.common.collect.Lists;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.ztianzeng.apidoc.Reader;
 import com.ztianzeng.apidoc.SourceBuilder;
 import com.ztianzeng.apidoc.maven.ssh.SSHConfig;
 import com.ztianzeng.apidoc.maven.ssh.SSHCopy;
+import com.ztianzeng.apidoc.maven.yapi.upload.UploadToYapi;
 import com.ztianzeng.apidoc.models.OpenAPI;
 import com.ztianzeng.apidoc.models.info.Info;
 import com.ztianzeng.apidoc.utils.Json;
@@ -49,6 +54,24 @@ public class DocMojo extends AbstractMojo {
 	private MavenProject mavenProject;
 
 	/**
+	 * YAPI的远程服务器的地址
+	 */
+	@Parameter(property = "yapiUrl", required = true)
+	private String yapiUrl;
+
+	/**
+	 * YAPI中对应项目的Token，在项目的设置->Token中可以查看该值
+	 */
+	@Parameter(property = "yapiProjectToken", required = true)
+	private String yapiProjectToken;
+
+	/**
+	 * 指定的多个Controller文件的名称，只针对这些Controller进行处理，多用于测试场景，多个以英文逗号分隔，
+	 */
+	@Parameter(property = "controllers")
+	private String controllers;
+
+	/**
 	 * 标题
 	 */
 	@Parameter(property = "title", defaultValue = "doc")
@@ -61,27 +84,27 @@ public class DocMojo extends AbstractMojo {
 	private String version;
 
 	/**
+	 * The output directory into which to copy the resources.
+	 */
+	@Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
+	private File outputDirectory;
+
+	/**
 	 * 输出的文件名称
 	 */
-	@Parameter(property = "outFileName", defaultValue = "doc.json")
+	@Parameter(property = "outFileName", defaultValue = "yapidoc.json")
 	private String outFileName;
 
 	/**
 	 * 输出的文件名称
 	 */
-	@Parameter(property = "toJar", defaultValue = "true")
+	@Parameter(property = "toJar", defaultValue = "false")
 	private Boolean toJar;
 	/**
 	 * 指定scp目标地址
 	 */
 	@Parameter(property = "ssh")
 	private SSHConfig ssh;
-
-	/**
-	 * The output directory into which to copy the resources.
-	 */
-	@Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
-	private File outputDirectory;
 
 	/**
 	 *
@@ -135,8 +158,15 @@ public class DocMojo extends AbstractMojo {
 
 		Reader reader = new Reader(new OpenAPI(), sourceBuilder);
 
-		Set<JavaClass> controllerData;
-		controllerData = sourceBuilder.getControllerData();
+		Set<JavaClass> controllerData = sourceBuilder.getControllerData();
+
+		final List<String> controllerList = getControllerList();
+
+		if (controllerList != null) {
+			controllerData = controllerData.stream().filter(javaClass -> {
+				return controllerList.contains(javaClass.getName());
+			}).collect(Collectors.toSet());
+		}
 
 		OpenAPI open = reader.read(controllerData);
 		Info info = new Info();
@@ -150,7 +180,9 @@ public class DocMojo extends AbstractMojo {
 			String filePath = outputDirectory.getPath() + "/" + outFileName;
 			File file = new File(filePath);
 			Json.mapper().writeValue(file, open);
-			getLog().info("target" + project.getBuild().getOutputDirectory());
+
+			// 上传到Yapi服务器
+			uploadToYapiServer(filePath);
 
 			if (ssh != null) {
 				getLog().info("输出到远程目录" + ssh);
@@ -169,13 +201,37 @@ public class DocMojo extends AbstractMojo {
 						getOutputDirectory(), project, encoding, combinedFilters, Collections.emptyList(), session);
 				mavenResourcesFiltering.filterResources(mavenResourcesExecution);
 			}
+			// 删除临时文件
+			// file.delete();
 		} catch (IOException | MavenFilteringException e) {
-			e.printStackTrace();
+			getLog().error("YApi插件执行异常:" + e.getMessage(), e);
 		}
 
 	}
 
 	public File getOutputDirectory() {
 		return outputDirectory;
+	}
+
+	private void uploadToYapiServer(String filePath) throws IOException {
+		getLog().info("开始将Api信息上传到Yapi服务器：" + yapiUrl);
+		String json = FileUtils.readFileToString(new File(filePath), "utf-8");
+		OpenAPI openAPI = Json.mapper().readValue(json, OpenAPI.class);
+		UploadToYapi uploadToYapi = new UploadToYapi(yapiProjectToken, yapiUrl);
+		uploadToYapi.upload(openAPI, true);
+		getLog().info("完成Api信息上传.");
+	}
+
+	/**
+	 * 获取只处理的Controller列表
+	 * 
+	 * @return
+	 */
+	public List<String> getControllerList() {
+		List<String> controllerList = null;
+		if (StringUtils.isNotEmpty(controllers)) {
+			controllerList = Lists.newArrayList(controllers.split(","));
+		}
+		return controllerList;
 	}
 }

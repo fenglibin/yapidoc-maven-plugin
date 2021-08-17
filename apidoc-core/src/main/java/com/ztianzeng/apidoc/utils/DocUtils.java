@@ -6,7 +6,7 @@ import static com.ztianzeng.apidoc.constants.SpringMvcConstants.REQUEST_MAPPING;
 import static com.ztianzeng.apidoc.constants.SpringMvcConstants.REQUEST_MAPPING_FULLY;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +21,10 @@ import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaField;
 import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
+import com.thoughtworks.qdox.model.impl.DefaultJavaWildcardType;
 import com.ztianzeng.apidoc.constants.RequestMethod;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 基本工具类
@@ -30,6 +33,7 @@ import com.ztianzeng.apidoc.constants.RequestMethod;
  * @version V1.0
  * @date 2019-06-05 15:13
  */
+@Slf4j
 public final class DocUtils {
 	private DocUtils() {
 	}
@@ -148,13 +152,11 @@ public final class DocUtils {
 	public static String getRequestMappingUrl(JavaAnnotation annotation) {
 		String baseUrl = "/";
 		if (isRequestMapping(annotation)) {
-			if (isRequestMapping(annotation)) {
-				if (annotation.getNamedParameter("value") == null) {
-					return baseUrl;
-				}
-				baseUrl = annotation.getNamedParameter("value").toString();
-				baseUrl = baseUrl.replaceAll("\"", "");
+			if (annotation.getNamedParameter("value") == null) {
+				return baseUrl;
 			}
+			baseUrl = annotation.getNamedParameter("value").toString();
+			baseUrl = baseUrl.replaceAll("\"", "");
 		}
 		return baseUrl;
 	}
@@ -253,7 +255,7 @@ public final class DocUtils {
 	}
 
 	/**
-	 * 获取泛型的数量
+	 * 获取泛型的JavaClass类型
 	 *
 	 * @param returnType
 	 * @return
@@ -261,8 +263,15 @@ public final class DocUtils {
 	public static JavaClass genericityContentType(JavaClass returnType) {
 		if (returnType instanceof DefaultJavaParameterizedType) {
 			if (!((DefaultJavaParameterizedType) returnType).getActualTypeArguments().isEmpty()) {
-				return (DefaultJavaParameterizedType) ((DefaultJavaParameterizedType) returnType)
+				com.thoughtworks.qdox.model.JavaType javaType = ((DefaultJavaParameterizedType) returnType)
 						.getActualTypeArguments().get(0);
+				if (javaType instanceof DefaultJavaWildcardType) {
+					return (DefaultJavaWildcardType) javaType;
+				} else if (javaType instanceof DefaultJavaParameterizedType) {
+					return (DefaultJavaParameterizedType) javaType;
+				}
+				log.warn("javaType:" + javaType.getClass() + " error ");
+				return null;
 			}
 		}
 		return null;
@@ -301,60 +310,6 @@ public final class DocUtils {
 	}
 
 	/**
-	 * Automatic repair of generic split class names
-	 *
-	 * @param arr arr of class name
-	 * @return array of String
-	 */
-	private static String[] classNameFix(String[] arr) {
-		List<String> classes = new ArrayList<>();
-		List<Integer> indexList = new ArrayList<>();
-		int globIndex = 0;
-		for (int i = 0; i < arr.length; i++) {
-			if (!classes.isEmpty()) {
-				int index = classes.size() - 1;
-				if (!isClassName(classes.get(index))) {
-					globIndex = globIndex + 1;
-					if (globIndex < arr.length) {
-						indexList.add(globIndex);
-						String className = classes.get(index) + "," + arr[globIndex];
-						classes.set(index, className);
-					}
-
-				} else {
-					globIndex = globIndex + 1;
-					if (globIndex < arr.length) {
-						if (isClassName(arr[globIndex])) {
-							indexList.add(globIndex);
-							classes.add(arr[globIndex]);
-						} else {
-							if (!indexList.contains(globIndex) && !indexList.contains(globIndex + 1)) {
-								indexList.add(globIndex);
-								classes.add(arr[globIndex] + "," + arr[globIndex + 1]);
-								globIndex = globIndex + 1;
-								indexList.add(globIndex);
-							}
-						}
-					}
-				}
-			} else {
-				if (isClassName(arr[i])) {
-					indexList.add(i);
-					classes.add(arr[i]);
-				} else {
-					if (!indexList.contains(i) && !indexList.contains(i + 1)) {
-						globIndex = i + 1;
-						classes.add(arr[i] + "," + arr[globIndex]);
-						indexList.add(i);
-						indexList.add(i + 1);
-					}
-				}
-			}
-		}
-		return classes.toArray(new String[classes.size()]);
-	}
-
-	/**
 	 * 是否是合法的java类名称
 	 *
 	 * @param className class nem
@@ -371,6 +326,31 @@ public final class DocUtils {
 		} else {
 			return true;
 		}
+	}
+	
+	/**
+	 * 获取参数的泛型参数的拼接
+	 * 
+	 * @param parameter
+	 * @return
+	 */
+	public static String getParameterFiledInfo(JavaClass javaClass) {
+		// 拼装泛型类型
+		StringBuilder genericType = new StringBuilder(javaClass.getBinaryName());
+		if (javaClass instanceof DefaultJavaParameterizedType) {
+			List<com.thoughtworks.qdox.model.JavaType> tar = new LinkedList<>();
+			tar = ((DefaultJavaParameterizedType) javaClass).getActualTypeArguments();
+			if (!tar.isEmpty()) {
+				genericType.append("<");
+				tar.forEach(javaType -> {
+					genericType.append(javaType.getCanonicalName());
+					genericType.append(",");
+				});
+				genericType.deleteCharAt(genericType.length() - 1);
+				genericType.append(">");
+			}
+		}
+		return genericType.toString();
 	}
 
 }
