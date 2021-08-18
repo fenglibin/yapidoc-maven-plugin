@@ -72,5 +72,5 @@ mvn prepare-package -Dmaven.test.skip
 
 ## 感谢
 
-当前项目为https://github.com/zxcvbnmzsedr/apidoc的扩展及问题修复，感谢原作者的付出。
+当前项目为 https://github.com/zxcvbnmzsedr/apidoc 的扩展及问题修复，感谢原作者的付出。
 
