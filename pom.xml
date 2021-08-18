@@ -4,13 +4,41 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ztianzeng.apidoc</groupId>
-    <artifactId>apidoc</artifactId>
+    <groupId>com.eeeffff.yapidoc</groupId>
+    <artifactId>yapidoc</artifactId>
     <packaging>pom</packaging>
-    <version>0.02-SNAPSHOT</version>
-    <name>apidoc</name>
-    <description>use java annotation generate the document</description>
-    <url>https://github.com/zxcvbnmzsedr/apidoc.git</url>
+    <version>1.0.0</version>
+
+    <name>${project.artifactId}</name>
+    <description>Maven plugin used to generate yapi document for Java controllers</description>
+    <url>https://github.com/fenglibin/yapidoc</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/fenglibin/yapidoc</url>
+        <connection>scm:git:https://github.com/fenglibin/yapidoc.git</connection>
+        <developerConnection>scm:git:https://github.com/fenglibin/yapidoc.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>The YApiDoc Project Contributors</name>
+            <email>56553655@163.com</email>
+            <url>https://github.com/fenglibin/yapidoc</url>
+        </developer>
+    </developers>
+    <organization>
+        <name>Fenglibin</name>
+	<url>https://github.com/fenglibin</url>
+    </organization>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/fenglibin/yapidoc/issues</url>
+    </issueManagement>
 
     <properties>
         <mavenFilteringVersion>3.1.1</mavenFilteringVersion>
@@ -23,31 +51,9 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- Exclude all generated code -->
     </properties>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>scm:git:https://github.com/zxcvbnmzsedr/apidoc.git</url>
-        <connection>scm:git:https://github.com/zxcvbnmzsedr/apidoc.git</connection>
-        <developerConnection>https://github.com/zxcvbnmzsedr/apidoc.git</developerConnection>
-        <tag>0.02</tag>
-    </scm>
-
-    <developers>
-        <developer>
-            <name>ztianzeng</name>
-        </developer>
-    </developers>
     <modules>
-        <module>apidoc-core</module>
-        <module>apidoc-yapi-plugin</module>
-        <module>apidoc-maven-plugin</module>
+        <module>yapidoc-core</module>
+        <module>yapidoc-maven-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -58,9 +64,9 @@
                 <version>${mavenFilteringVersion}</version>
             </dependency>
             <dependency>
-                <groupId>com.ztianzeng.apidoc</groupId>
-                <artifactId>apidoc-core</artifactId>
-                <version>0.02-SNAPSHOT</version>
+                <groupId>com.eeeffff.yapidoc</groupId>
+                <artifactId>yapidoc-core</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.plugin-tools</groupId>
@@ -209,7 +215,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>3.3.0</version>
                 <configuration>
                     <charset>UTF-8</charset>
                 </configuration>
@@ -312,9 +318,10 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>3.0.1</version>
                         <executions>
                             <execution>
+                                <id>sign-artifacts</id>
                                 <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
@@ -327,15 +334,18 @@
             </build>
 
             <distributionManagement>
-                <snapshotRepository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-                </snapshotRepository>
-                <repository>
-                    <id>oss</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
+		<repository>
+		    <id>ossrh</id>
+		    <name>Release</name>
+		    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+
+		<snapshotRepository>
+		    <id>ossrh</id>
+		    <name>SNAPSHOTS</name>
+		    <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	    </distributionManagement>
         </profile>
     </profiles>
 
