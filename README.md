@@ -68,3 +68,9 @@ mvn yapidoc:yapidoc
 mvn prepare-package -Dmaven.test.skip
 ```
 
+
+
+## 感谢
+
+当前项目为https://github.com/zxcvbnmzsedr/apidoc的扩展及问题修复，感谢原作者的付出。
+
