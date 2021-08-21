@@ -357,7 +357,7 @@ public class Reader {
 				inputParameter.in("query");
 				inputParameter.setName(name);
 				inputParameter.setRequired(requiredBoolean.get());
-				inputParameter.setType(parameter.getType().getBinaryName());
+				//inputParameter.setType(parameter.getType().getBinaryName());
 				Schema schema = new Schema();
 				String desc = StringUtils.isEmpty(paramDesc.get(parameter.getName())) ? ""
 						: paramDesc.get(parameter.getName()) + "，";
@@ -378,8 +378,8 @@ public class Reader {
 						inputParameter.setName(k);
 						inputParameter.in("query");
 						inputParameter.setSchema(v);
-						inputParameter.setType(parameter.getType().getBinaryName());
-						v.setType(parameter.getType().getCanonicalName());
+						//inputParameter.setType(parameter.getType().getBinaryName());
+						//v.setType(parameter.getType().getCanonicalName());
 						inputParameter.setRequired(requiredBoolean.get());
 						String desc = StringUtils.isEmpty(paramDesc.get(parameter.getName())) ? ""
 								: paramDesc.get(parameter.getName()) + "，";

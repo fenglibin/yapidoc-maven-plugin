@@ -7,7 +7,7 @@
     <groupId>com.eeeffff.yapidoc</groupId>
     <artifactId>yapidoc</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>${project.artifactId}</name>
     <description>Maven plugin used to generate yapi document for Java controllers</description>

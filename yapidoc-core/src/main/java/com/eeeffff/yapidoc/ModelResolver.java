@@ -103,7 +103,7 @@ public class ModelResolver implements ModelConverter {
 		}
 
 		schema.name(parentName);
-		schema.setType(targetClass.getBinaryName());
+		//schema.setType(targetClass.getBinaryName());
 		// 拼装泛型类型字符串
 		String fileTypeInfo = DocUtils.getParameterFiledInfo(targetClass);
 		schema.setDescription("参数类型：" + fileTypeInfo);
@@ -195,7 +195,9 @@ public class ModelResolver implements ModelConverter {
 			}
 			Schema<?> mapSchema = new MapSchema().additionalProperties(addPropertiesSchema);
 			mapSchema.name(schema.getName());
-			mapSchema.setType(targetClass.getBinaryName());
+			//mapSchema.setType(targetClass.getBinaryName());
+			mapSchema.setType(PrimitiveType.OBJECT.getCommonName());
+			schema.setType(PrimitiveType.OBJECT.getCommonName());
 			mapSchema.addProperties(annotatedType.getPropertyName(), schema);
 			mapSchema.setDescription(schema.getDescription());
 			schema = mapSchema;
@@ -226,7 +228,9 @@ public class ModelResolver implements ModelConverter {
 			schema.addProperties(javaType.getBinaryName(), items);
 			Schema<?> arraySchema = new ArraySchema().items(items);
 			arraySchema.name(schema.getName());
-			arraySchema.setType(targetClass.getBinaryName());
+			//Collection要设置为Object类型，否则不能够正确展示
+			arraySchema.setType(PrimitiveType.OBJECT.getCommonName());
+			schema.setType(PrimitiveType.OBJECT.getCommonName());
 			arraySchema.addProperties(annotatedType.getPropertyName(), schema);
 			schema = arraySchema;
 		}
@@ -239,14 +243,11 @@ public class ModelResolver implements ModelConverter {
 			if (field == null) {
 				continue;
 			}
-			if (DocUtils.isPrimitive(field.getName())) {
-				continue;
-			}
 
 			JavaClass type = field.getType();
 			String typeName = findName(genericityContentType == null ? type : genericityContentType);
 			if (typeName == null) {
-				return null;
+				continue;
 			}
 			AnnotatedType aType = new AnnotatedType().javaClass(type).javaType(propertyDef.getPrimaryType())
 					.parent(schema).resolveAsRef(annotatedType.isResolveAsRef())
@@ -268,11 +269,18 @@ public class ModelResolver implements ModelConverter {
 					aType = new AnnotatedType().javaClass(genericityContentType).parent(schema)
 							.resolveAsRef(annotatedType.isResolveAsRef())
 							.jsonViewAnnotation(annotatedType.getJsonViewAnnotation()).skipSchemaName(true)
-							.schemaProperty(true).propertyName(targetClass.getName());
+							.schemaProperty(true).propertyName(genericityContentType.getName());
 					propSchema = context.resolve(aType);
 				} else {
 					if (!DocUtils.isPrimitive(findName(genericityContentType))) {
 						propSchema.set$ref(constructRef(findName(genericityContentType)));
+					}else {
+						//泛型内部为基础类型时，如String,Integer的处理
+						Schema<?> typeSchema = new Schema();
+						PrimitiveType primitiveType = PrimitiveType.fromType(findName(genericityContentType));
+						typeSchema.setType(Optional.ofNullable(primitiveType).orElse(PrimitiveType.OBJECT).getCommonName());
+						typeSchema.setDescription("类型："+genericityContentType.getBinaryName());
+						propSchema.addProperties(genericityContentType.getName(), typeSchema);
 					}
 
 				}

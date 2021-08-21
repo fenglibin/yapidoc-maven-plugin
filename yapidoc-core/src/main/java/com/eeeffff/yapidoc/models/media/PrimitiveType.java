@@ -222,27 +222,27 @@ public enum PrimitiveType {
 		datatypeMappings = Collections.unmodifiableMap(dms);
 
 		final Map<String, PrimitiveType> keyClasses = new HashMap<>();
-		addKeys(keyClasses, BOOLEAN, Boolean.class.getName(), Boolean.TYPE.getName());
-		addKeys(keyClasses, STRING, String.class.getName(), Character.class.getName(), Character.TYPE.getName());
-		addKeys(keyClasses, BYTE, Byte.class.getName(), Byte.TYPE.getName());
-		addKeys(keyClasses, URL, java.net.URL.class.getName());
-		addKeys(keyClasses, URI, java.net.URI.class.getName());
-		addKeys(keyClasses, UUID, java.util.UUID.class.getName());
-		addKeys(keyClasses, INT, Integer.class.getName(), Integer.TYPE.getName(), Short.class.getName(),
+		addKeys(keyClasses, BOOLEAN, Boolean.class.getName(), Boolean.class.getSimpleName(), Boolean.TYPE.getName());
+		addKeys(keyClasses, STRING, String.class.getName(), String.class.getSimpleName(), Character.class.getName(), Character.TYPE.getName());
+		addKeys(keyClasses, BYTE, Byte.class.getName(),Byte.class.getSimpleName(), Byte.TYPE.getName());
+		addKeys(keyClasses, URL, java.net.URL.class.getName(), java.net.URL.class.getSimpleName());
+		addKeys(keyClasses, URI, java.net.URI.class.getName(), java.net.URI.class.getSimpleName());
+		addKeys(keyClasses, UUID, java.util.UUID.class.getName(), java.util.UUID.class.getSimpleName());
+		addKeys(keyClasses, INT, Integer.class.getName(), Integer.class.getSimpleName(), Integer.TYPE.getName(), Short.class.getName(),
 				Short.TYPE.getName());
-		addKeys(keyClasses, LONG, Long.class.getName(), Long.TYPE.getName());
-		addKeys(keyClasses, FLOAT, Float.class.getName(), Float.TYPE.getName());
-		addKeys(keyClasses, DOUBLE, Double.class.getName(), Double.TYPE.getName());
-		addKeys(keyClasses, INTEGER, java.math.BigInteger.class.getName());
-		addKeys(keyClasses, DECIMAL, java.math.BigDecimal.class.getName());
-		addKeys(keyClasses, NUMBER, Number.class.getName());
-		addKeys(keyClasses, DATE, DateStub.class.getName());
-		addKeys(keyClasses, DATE_TIME, java.util.Date.class.getName());
-		addKeys(keyClasses, DATE_TIME, Calendar.class.getName());
-		addKeys(keyClasses, FILE, java.io.File.class.getName());
-		addKeys(keyClasses, OBJECT, Object.class.getName());
-		addKeys(keyClasses, LIST, List.class.getName());
-		addKeys(keyClasses, MAP, Map.class.getName());
+		addKeys(keyClasses, LONG, Long.class.getName(), Long.class.getSimpleName(), Long.TYPE.getName());
+		addKeys(keyClasses, FLOAT, Float.class.getName(), Float.class.getSimpleName(), Float.TYPE.getName());
+		addKeys(keyClasses, DOUBLE, Double.class.getName(), Double.class.getSimpleName(), Double.TYPE.getName());
+		addKeys(keyClasses, INTEGER, java.math.BigInteger.class.getName(), java.math.BigInteger.class.getSimpleName());
+		addKeys(keyClasses, DECIMAL, java.math.BigDecimal.class.getName(), java.math.BigDecimal.class.getSimpleName());
+		addKeys(keyClasses, NUMBER, Number.class.getName(), Number.class.getSimpleName());
+		addKeys(keyClasses, DATE, DateStub.class.getName(), DateStub.class.getSimpleName());
+		addKeys(keyClasses, DATE_TIME, java.util.Date.class.getName(), java.util.Date.class.getSimpleName());
+		addKeys(keyClasses, DATE_TIME, Calendar.class.getName(), Calendar.class.getSimpleName());
+		addKeys(keyClasses, FILE, java.io.File.class.getName(), java.io.File.class.getSimpleName());
+		addKeys(keyClasses, OBJECT, Object.class.getName(), Object.class.getSimpleName());
+		addKeys(keyClasses, LIST, List.class.getName(), List.class.getSimpleName());
+		addKeys(keyClasses, MAP, Map.class.getName(), Map.class.getSimpleName());
 		KEY_CLASSES = Collections.unmodifiableMap(keyClasses);
 
 		final Map<Class<?>, PrimitiveType> baseClasses = new HashMap<Class<?>, PrimitiveType>();
