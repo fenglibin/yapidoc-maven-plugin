@@ -34,7 +34,7 @@ URL解析:SpringMvc中定义的基本Mapping
 <plugin>
     <artifactId>yapidoc-maven-plugin</artifactId>
     <groupId>com.eeeffff.yapidoc</groupId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <configuration>
         <!--Yapi远程服务器地址-->
         <yapiUrl>http://yapi.xxx.com/</yapiUrl>
